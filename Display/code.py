@@ -7,9 +7,6 @@ import terminalio
 # display
 import displayio
 from adafruit_display_text.label import Label
-from adafruit_display_shapes.rect import Rect
-from adafruit_display_shapes.circle import Circle
-from adafruit_pyportal import PyPortal
 display = board.DISPLAY
 display.rotation = 270
 screen_width = 240
@@ -22,6 +19,7 @@ ts = adafruit_touchscreen.Touchscreen(board.TOUCH_YD, board.TOUCH_YU,
 # pyportal = PyPortal()
 import neopixel
 import styles
+import ui
 
 # network setup
 from digitalio import DigitalInOut
@@ -53,9 +51,6 @@ display.show(boot_message)
 
 def connected(client):
     print("Connected to AdafruitIO!")
-    io.subscribe(temperatureSettingFeed)
-    io.subscribe(fanSettingFeed)
-    io.subscribe(modeFeed)
 
 def subscribe(client, userdata, topic, granted_qos):
     print("Subscribed to {0} with PID level {1}".format(topic, granted_qos))
@@ -88,35 +83,7 @@ io.on_message = message
 print("Connecting to IO...")
 io.connect()
 
-def displayUI(mode, fanSpeed, temperature):
-    color = styles.colors[mode]
-
-    # set up the top bar
-    topBar = displayio.Group(x=10, y=10)
-    powerIcon = displayio.Group(x=0, y=0)
-    powerIcon.append(styles.icons["power"])
-    heatIcon = displayio.Group(x=144, y=0)
-    heatIcon.append(styles.icons["heat"])
-    coolIcon = displayio.Group(x=188, y=0)
-    coolIcon.append(styles.icons["cool"])
-    topBar.append(powerIcon)
-    topBar.append(heatIcon)
-    topBar.append(coolIcon)
-    display.show(topBar)
-
-    # set up the temperature display
-    temperatureDiv = displayio.Group(x=47, y=47)
-    increaseIcon = displayio.Group(x=45, y=0)
-    increaseIcon.append(styles.icons["chevron_up"])
-    decreaseIcon = displayio.Group(x=45, y=154)
-    decreaseIcon.append(styles.icons["chevron_down"])
-    temperature_label = Label(font, color=color, text=str(temperature), x=0, y=38)
-    temperatureDiv.append(temperature_label)
-    temperatureDiv.append(increaseIcon)
-    temperatureDiv.append(decreaseIcon)
-
-
-displayUI("heat", "3", 73)
+ui.displayUI("heat", 73, 1)
 
 while True:
     io.loop()
