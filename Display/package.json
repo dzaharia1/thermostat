@@ -1,7 +1,7 @@
 {
     "scripts": {
-        "monitor": "screen /dev/tty.usbmodem2101 115200",
-        "push-main": "curl -v -u :thanksdan -T code.py -L --location-trusted http://circuitpython.local/fs/code.py",
+        "monitor": "screen /dev/tty.usbmodem101 115200",
+        "push": "cp *.py /Volumes/CIRCUITPY",
         "push-all": "curl -v -u :thanksdan -T * -L --location-trusted http://circuitpython.local/fs/"
   }
 }
