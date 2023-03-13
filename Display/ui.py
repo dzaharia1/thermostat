@@ -1,13 +1,26 @@
+from adafruit_pyportal import PyPortal
 import displayio
 from displayio import Group
 import styles
 import board
 import terminalio
 from adafruit_display_text.label import Label
+from adafruit_button import Button
+import adafruit_touchscreen
 
 font = terminalio.FONT
 display = board.DISPLAY
-
+display.rotation = 270
+screen_width = 240
+screen_height = 320
+ts = adafruit_touchscreen.Touchscreen(
+        board.TOUCH_YD,
+        board.TOUCH_YU,
+        board.TOUCH_XR,
+        board.TOUCH_XL,
+        calibration=((8938, 53100), (9065, 59629)),
+        z_threshold=100,
+        size=(screen_width, screen_height))
 temperatureSetting = 60
 temperatureReading = 70
 fanSetting = 0
@@ -15,7 +28,7 @@ modeSetting = "cool"
 
 ui = Group(x=0, y=0)
 topBarDiv = Group(x=10, y=10)
-temperatureDiv = Group(x=45, y=65)
+temperatureDiv = Group(x=0, y=65)
 fanSelectorDiv = Group(x=10, y=262)
 ui.append(temperatureDiv)
 ui.append(fanSelectorDiv)
@@ -36,11 +49,11 @@ topBarDiv.append(manualIcon)
 topBarDiv.append(powerIcon)
 
 # build out temperatureDiv
-increaseIcon = Group(x=45, y=0)
+increaseIcon = Group(x=92, y=0)
 increaseIcon.append(styles.icons["chevron_up"])
-decreaseIcon = Group(x=45, y=135)
+decreaseIcon = Group(x=92, y=135)
 decreaseIcon.append(styles.icons["chevron_down"])
-temperatureLabel = Label(font, color=styles.colors["white"], x=28, y=95, text="...")
+temperatureLabel = Label(font, color=styles.colors["white"], x=75, y=95)
 temperatureLabel.scale = 7
 temperatureDiv.append(increaseIcon)
 temperatureDiv.append(decreaseIcon)
@@ -60,14 +73,20 @@ def updateMode(newMode):
         warmIcon.hidden = False
         coolIcon.hidden = True
         manualIcon.hidden = True
+        increaseIcon.hidden = False
+        decreaseIcon.hidden = False
     elif modeSetting == "cool":
         warmIcon.hidden = True
         coolIcon.hidden = False
         manualIcon.hidden = True
+        increaseIcon.hidden = False
+        decreaseIcon.hidden = False
     elif modeSetting == "manual":
         warmIcon.hidden = True
         coolIcon.hidden = True
         manualIcon.hidden = False
+        increaseIcon.hidden = True
+        decreaseIcon.hidden = True
 
 def updateTemperature(newTemperature):
     global temperatureSetting
@@ -89,3 +108,128 @@ def updateFanSpeed(newSpeed):
 def showCurrentTemperature(temp):
     # todo
     return
+
+modeButtons = []
+temperatureButtons = []
+fanButtons = []
+
+manualButton = Button(
+    x = topBarDiv.x + warmIcon.x,
+    y = 10,
+    width = 40,
+    height = 40,
+    fill_color = None,
+    outline_color = None,
+    style = Button.RECT,    
+)
+ui.append(manualButton)
+modeButtons.append(manualButton)
+
+warmButton = Button(
+    x = topBarDiv.x + warmIcon.x + 48,
+    y = 10,
+    width = 40,
+    height = 40,
+    fill_color = None,
+    outline_color = None,
+    style = Button.RECT,
+)
+ui.append(warmButton)
+modeButtons.append(warmButton)
+
+coolButton = Button(
+    x = topBarDiv.x + warmIcon.x + 96,
+    y = 10,
+    width = 40,
+    height = 40,
+    fill_color = None,
+    outline_color = None,
+    style = Button.RECT,    
+)
+ui.append(coolButton)
+modeButtons.append(coolButton)
+
+raiseTemperatureButton = Button(
+    x = 92,
+    y = 70,
+    width = 50,
+    height = 50,
+    fill_color = None,
+    outline_color = None,
+    style = Button.RECT,    
+)
+ui.append(raiseTemperatureButton)
+temperatureButtons.append(raiseTemperatureButton)
+
+lowerTemperatureButton = Button(
+    x = 92,
+    y = 200,
+    width = 50,
+    height = 50,
+    fill_color = None,
+    outline_color = None,
+    style = Button.RECT
+)
+ui.append(lowerTemperatureButton)
+temperatureButtons.append(lowerTemperatureButton)
+
+fanOffButton = Button(
+    x = fanSelectorDiv.x,
+    y = fanSelectorDiv.y,
+    width = 48,
+    height = 48,
+    fill_color = None,
+    outline_color = None,
+    style = Button.RECT
+)
+ui.append(fanOffButton)
+fanButtons.append(fanOffButton)
+
+fanHighButton = Button(
+    x = fanSelectorDiv.x + 66,
+    y = fanSelectorDiv.y,
+    width = 48,
+    height = 48,
+    fill_color = None,
+    outline_color = None,
+    style = Button.RECT
+)
+ui.append(fanHighButton)
+fanButtons.append(fanHighButton)
+
+fanMediumButton = Button(
+    x = fanSelectorDiv.x + 132,
+    y = fanSelectorDiv.y + 5,
+    width = 38,
+    height = 38,
+    fill_color = None,
+    outline_color = None,
+    style = Button.RECT
+)
+ui.append(fanMediumButton)
+fanButtons.append(fanMediumButton)
+
+fanLowButton = Button(
+    x = fanSelectorDiv.x + 188,
+    y = fanSelectorDiv.y + 8,
+    width = 32,
+    height = 32,
+    fill_color = None,
+    outline_color = None,
+    style = Button.RECT
+)
+ui.append(fanLowButton)
+fanButtons.append(fanLowButton)
+
+def checkTarget(button, touch):
+    touchX = touch[0]
+    touchY = touch[1]
+    buttonX1 = button.x
+    buttonY1 = button.y
+    buttonX2 = buttonX1 + button.width
+    buttonY2 = buttonY1 + button.height
+
+    if touchX >= buttonX1 and touchX <= buttonX2 and touchY >= buttonY1 and touchY <= buttonY2:
+        return True
+    else:
+        return False
