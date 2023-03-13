@@ -1,4 +1,3 @@
-from adafruit_pyportal import PyPortal
 import displayio
 from displayio import Group
 import styles
@@ -13,6 +12,7 @@ display = board.DISPLAY
 display.rotation = 270
 screen_width = 240
 screen_height = 320
+
 ts = adafruit_touchscreen.Touchscreen(
         board.TOUCH_YD,
         board.TOUCH_YU,
@@ -21,10 +21,12 @@ ts = adafruit_touchscreen.Touchscreen(
         calibration=((8938, 53100), (9065, 59629)),
         z_threshold=100,
         size=(screen_width, screen_height))
-temperatureSetting = 60
-temperatureReading = 70
-fanSetting = 0
-modeSetting = "cool"
+
+fanSetting = 1
+temperatureSetting = 70
+fanControl = 1
+fanRun = 0
+modeSetting = "manual"
 
 ui = Group(x=0, y=0)
 topBarDiv = Group(x=10, y=10)
@@ -35,29 +37,29 @@ ui.append(fanSelectorDiv)
 ui.append(topBarDiv)
 
 # build out top bar
-powerIcon = Group(x=0, y=2)
-powerIcon.append(styles.icons["power"])
+currTempLabel = Label(font, color=styles.colors["white"], x=5, y=20)
+currTempLabel.scale = 2
 warmIcon =  Group(x=84, y=0)
 warmIcon.append(styles.icons['warm'])
 coolIcon =  Group(x=84, y=0)
 coolIcon.append(styles.icons["cool"])
 manualIcon =  Group(x=84, y=0)
 manualIcon.append(styles.icons["manual"])
+topBarDiv.append(currTempLabel)
 topBarDiv.append(warmIcon)
 topBarDiv.append(coolIcon)
 topBarDiv.append(manualIcon)
-topBarDiv.append(powerIcon)
 
 # build out temperatureDiv
 increaseIcon = Group(x=92, y=0)
 increaseIcon.append(styles.icons["chevron_up"])
 decreaseIcon = Group(x=92, y=135)
 decreaseIcon.append(styles.icons["chevron_down"])
-temperatureLabel = Label(font, color=styles.colors["white"], x=75, y=95)
-temperatureLabel.scale = 7
+temperatureSettingLabel = Label(font, color=styles.colors["white"], x=75, y=95)
+temperatureSettingLabel.scale = 7
 temperatureDiv.append(increaseIcon)
 temperatureDiv.append(decreaseIcon)
-temperatureDiv.append(temperatureLabel)
+temperatureDiv.append(temperatureSettingLabel)
 
 # build out bottom bar
 fanSelectorDiv.append(styles.icons["fan_0"])
@@ -67,7 +69,7 @@ display.show(ui)
 def updateMode(newMode):
     global modeSetting
     modeSetting = newMode
-    temperatureLabel.color = styles.colors[newMode]
+    temperatureSettingLabel.color = styles.colors[newMode]
 
     if modeSetting == "warm":
         warmIcon.hidden = False
@@ -90,9 +92,9 @@ def updateMode(newMode):
 
 def updateTemperature(newTemperature):
     global temperatureSetting
-    global temperatureLabel
+    global temperatureSettingLabel
     temperatureSetting = newTemperature
-    temperatureLabel.text = str(temperatureSetting)
+    temperatureSettingLabel.text = str(temperatureSetting)
 
 def updateFanSpeed(newSpeed):
     global fanSetting

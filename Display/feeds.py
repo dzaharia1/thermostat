@@ -23,15 +23,6 @@ modeSettingFeed = "thermostat.mode"
 
 def connected(client):
     print("Connected to AdafruitIO!")
-    io.subscribe(temperatureSettingFeed)
-    io.subscribe(fanSettingFeed)
-    io.subscribe(modeSettingFeed)
-
-def subscribe(client, userdata, topic, granted_qos):
-    print("Subscribed to {0} with PID level {1}".format(topic, granted_qos))
-
-def unsubscribe(client, userdata, topic, pid):
-    print("Unsubscribed from {0} with PID level {1}".format(topic, pid))
 
 def disconnected(client):
     print("Disconnected from IO")
@@ -43,7 +34,7 @@ mqtt_client = MQTT(
     port=1883,
     username=secrets["aio_username"],
     password=secrets["aio_key"],
-    socket_pool=socket
+    socket_pool=socket,
 )
 
 io = IO_MQTT(mqtt_client)
