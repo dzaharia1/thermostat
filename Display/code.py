@@ -46,7 +46,7 @@ def checkButtons():
                     io.publish(feeds.modeSettingFeed, "warm")
                     ui.updateMode("warm")
                 elif i == 2:
-                    # io.publish(feeds.modeSettingFeed, "cool")
+                    io.publish(feeds.modeSettingFeed, "cool")
                     ui.updateMode("cool")
 
         # check temperature buttons
