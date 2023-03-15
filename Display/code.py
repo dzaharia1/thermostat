@@ -105,6 +105,8 @@ def checkTemperature():
 
 print("Starting loop")
 prev_refresh_time = 0.0
+checkTemperature()
+
 while True:
     checkButtons()
     if (time.monotonic() - prev_refresh_time) > 15:
