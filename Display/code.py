@@ -75,39 +75,43 @@ def checkButtons():
                     if ui.fanControl == 1:
                         feeds.publish(feeds.fanSettingFeed, "0")
                     ui.updateFanSpeed("0")
+                    ui.toggleLed(False)
                 else:
                     newFanSpeed = 4 - i
                     if ui.fanControl == 1:
                         feeds.publish(feeds.fanSettingFeed, str(newFanSpeed))
                     ui.updateFanSpeed(str(newFanSpeed))
+                    ui.toggleLed(True)
         time.sleep(.075)
 
 
 def checkTemperature():
     currTemp = adt.temperature * 1.8 + 32 - 18
     ui.currTempLabel.text = str(floor(currTemp)) + "F"
+    feeds.publish(feeds.temperatureReadingFeed, currTemp)
     
     if ui.modeSetting == "warm":
         if (currTemp <= ui.temperatureSetting):
             if ui.fanControl != 1:
-                print("Turning on the fan")
                 feeds.publish(feeds.fanSettingFeed, ui.fanSetting)
                 ui.fanControl = 1
+                ui.toggleLed(True)
         else:
             if ui.fanControl != 0:
-                print("Turning off the fan")
                 feeds.publish(feeds.fanSettingFeed, "0")
                 ui.fanControl = 0
+                ui.toggleLed(False)
     elif ui.modeSetting == "cool":
         if (currTemp >= ui.temperatureSetting):
             if ui.fanControl != 1:
-                print("Turning on the fan")
                 feeds.publish(feeds.fanSettingFeed, ui.fanSetting)
                 ui.fanControl = 1
+                ui.toggleLed(True)
         else:
             if ui.fanControl != 0:
                 feeds.publish(feeds.fanSettingFeed, "0")
                 ui.fanControl = 0
+                ui.toggleLed(False)
 
 checkTemperature()
 ui.updateMode("manual")
@@ -116,15 +120,8 @@ while True:
     checkButtons()
     if (time.monotonic() - lastButtonPush) > 10 :
         ui.disableScreen()
-    if (time.monotonic() - prev_refresh_time) > 15:
+    if (time.monotonic() - prev_refresh_time) > 40:
         print("Refreshing data")
         checkTemperature()
-        try:
-            io.get(feeds.temperatureSettingFeed)
-        except (ValueError, RuntimeError) as e:
-            print("Error trying to connect. Retrying\n", e)
-            feeds.wifi.reset()
-            io.reconnect()
-            continue
         prev_refresh_time = time.monotonic()
     time.sleep(.01)

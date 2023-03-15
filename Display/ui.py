@@ -1,3 +1,4 @@
+import time
 from analogio import AnalogOut
 from displayio import Group
 import styles
@@ -76,7 +77,6 @@ def updateMode(newMode):
 
     if modeSetting == "warm":
         status_light.fill((245, 83, 2))
-        status_light.show()
         warmIcon.hidden = False
         coolIcon.hidden = True
         manualIcon.hidden = True
@@ -86,14 +86,12 @@ def updateMode(newMode):
         # temperatureSettingLabel.hidden = False
     elif modeSetting == "cool":
         status_light.fill((20, 110, 227))
-        status_light.show()
         warmIcon.hidden = True
         coolIcon.hidden = False
         manualIcon.hidden = True
         temperatureDiv.hidden = False
     elif modeSetting == "manual":
         status_light.fill((255, 255, 255))
-        status_light.show()
         warmIcon.hidden = True
         coolIcon.hidden = True
         manualIcon.hidden = False
@@ -260,12 +258,12 @@ def checkTarget(button, touch):
 def set_backlight(val):
     display.brightness = val
     status_light.brightness = val
-    status_light.show()
+    if fanControl == 1:
+        status_light.show()
 
 def disableScreen():
     global screenEnabled
     if screenEnabled:
-        print("Disabling screen")
         set_backlight(.05)
         temperatureDiv.hidden = True
         fanSelectorDiv.hidden = True
@@ -274,9 +272,23 @@ def disableScreen():
 def enableScreen():
     global screenEnabled
     if not screenEnabled:
-        print("Enabling screen")
         set_backlight(1)
         fanSelectorDiv.hidden = False
         if modeSetting != "manual":
             temperatureDiv.hidden = False
         screenEnabled = True
+
+def toggleLed(state):
+    originalBrightness = status_light.brightness
+    if state:
+        for i in range(0, 101, 5):
+            status_light.brightness = originalBrightness * (i / 100)
+            print(status_light.brightness)
+            status_light.show()
+            time.sleep(.02)
+    else:
+        for i in range(0, 101, 5):
+            status_light.brightness = originalBrightness  - (i / 100)
+            print(status_light.brightness)
+            status_light.show()
+            time.sleep(.02)

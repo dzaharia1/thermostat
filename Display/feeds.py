@@ -19,6 +19,7 @@ wifi = adafruit_esp32spi_wifimanager.ESPSPI_WiFiManager(esp, secrets)
 temperatureSettingFeed = "thermostat.temperature-setting"
 fanSettingFeed = "thermostat.fan-setting"
 modeSettingFeed = "thermostat.mode"
+temperatureReadingFeed = "thermostat.temperature-reading"
 
 def connected(client):
     print("Connected to AdafruitIO!")
