@@ -77,18 +77,21 @@ def updateMode(newMode):
         manualIcon.hidden = True
         increaseIcon.hidden = False
         decreaseIcon.hidden = False
+        temperatureSettingLabel.hidden = False
     elif modeSetting == "cool":
         warmIcon.hidden = True
         coolIcon.hidden = False
         manualIcon.hidden = True
         increaseIcon.hidden = False
         decreaseIcon.hidden = False
+        temperatureSettingLabel.hidden = False
     elif modeSetting == "manual":
         warmIcon.hidden = True
         coolIcon.hidden = True
         manualIcon.hidden = False
         increaseIcon.hidden = True
         decreaseIcon.hidden = True
+        temperatureSettingLabel.hidden = True
 
 def updateTemperature(newTemperature):
     global temperatureSetting
