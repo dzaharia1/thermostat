@@ -76,14 +76,9 @@ def checkButtons():
         time.sleep(.075)
 
 def checkTemperature():
-    # check current temperature (the board seems to add 21 degrees to actual? How to account for heat of board?)
     currTemp = adt.temperature * 1.8 + 32 - 21
     ui.currTempLabel.text = str(floor(currTemp)) + "F"
-    # if (time.monotonic() - lastTempButtonPush) > 7:
-    #     ui.temperatureSettingLabel.text = str(floor(currTemp))
-    # else:
-    #     ui.temperatureSettingLabel.text = str(ui.temperatureSetting)
-    # compare against set temperature
+    
     if ui.modeSetting == "warm":
         if (currTemp <= ui.temperatureSetting):
             if ui.fanControl != 1:
@@ -112,8 +107,8 @@ print("Starting loop")
 prev_refresh_time = 0.0
 while True:
     checkButtons()
-    checkTemperature()
-    if (time.monotonic() - prev_refresh_time) > 30:
+    if (time.monotonic() - prev_refresh_time) > 15:
+        checkTemperature()
         print("repinging")
         try:
             io.get(feeds.temperatureSettingFeed)
