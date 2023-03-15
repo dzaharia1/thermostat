@@ -283,12 +283,10 @@ def toggleLed(state):
     if state:
         for i in range(0, 101, 5):
             status_light.brightness = originalBrightness * (i / 100)
-            print(status_light.brightness)
             status_light.show()
             time.sleep(.02)
     else:
         for i in range(0, 101, 5):
             status_light.brightness = originalBrightness  - (i / 100)
-            print(status_light.brightness)
             status_light.show()
             time.sleep(.02)
