@@ -12,7 +12,7 @@ from secrets import secrets
 # set up servo
 pwm = pwmio.PWMOut(board.A12, duty_cycle=2 ** 15, frequency=50)
 servo = servo.Servo(pwm)
-rotationRange = 105
+rotationRange = 100
 zeroAngle = 45
 servo.angle = zeroAngle
 
@@ -67,6 +67,7 @@ io.on_message = message
 print("Connecting to Adafruit IO...")
 io.connect()
 io.loop()
+io.get(fanFeed)
 
 while True:
     io.loop()
