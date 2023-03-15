@@ -75,32 +75,29 @@ def updateMode(newMode):
     temperatureSettingLabel.color = styles.colors[newMode]
 
     if modeSetting == "warm":
-        status_light.fill((245, 99, 2))
+        status_light.fill((245, 83, 2))
         status_light.show()
         warmIcon.hidden = False
         coolIcon.hidden = True
         manualIcon.hidden = True
-        increaseIcon.hidden = False
-        decreaseIcon.hidden = False
-        temperatureSettingLabel.hidden = False
+        temperatureDiv.hidden = False
+        # increaseIcon.hidden = False
+        # decreaseIcon.hidden = False
+        # temperatureSettingLabel.hidden = False
     elif modeSetting == "cool":
         status_light.fill((20, 110, 227))
         status_light.show()
         warmIcon.hidden = True
         coolIcon.hidden = False
         manualIcon.hidden = True
-        increaseIcon.hidden = False
-        decreaseIcon.hidden = False
-        temperatureSettingLabel.hidden = False
+        temperatureDiv.hidden = False
     elif modeSetting == "manual":
         status_light.fill((255, 255, 255))
         status_light.show()
         warmIcon.hidden = True
         coolIcon.hidden = True
         manualIcon.hidden = False
-        increaseIcon.hidden = True
-        decreaseIcon.hidden = True
-        temperatureSettingLabel.hidden = True
+        temperatureDiv.hidden = True
 
 def updateTemperature(newTemperature):
     global temperatureSetting
@@ -235,12 +232,11 @@ fanLowButton = Button(
 ui.append(fanLowButton)
 fanButtons.append(fanLowButton)
 
-screenActivateButtonOffset = 50
 screenActivateButton = Button(
-    x=screenActivateButtonOffset,
-    y=screenActivateButtonOffset,
-    width=screen_width - (2 * screenActivateButtonOffset),
-    height=screen_height - (2 * screenActivateButtonOffset),
+    x=50,
+    y=100,
+    width=screen_width - (100),
+    height=screen_height - (200),
     fill_color=None,
     outline_color=None,
     style=Button.RECT
@@ -280,6 +276,7 @@ def enableScreen():
     if not screenEnabled:
         print("Enabling screen")
         set_backlight(1)
-        temperatureDiv.hidden = False
         fanSelectorDiv.hidden = False
+        if modeSetting != "manual":
+            temperatureDiv.hidden = False
         screenEnabled = True

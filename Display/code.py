@@ -34,52 +34,52 @@ def checkButtons():
     point = ui.ts.touch_point
 
     # touch detected
-    if point and point[-1] > 3000:
+    if point and point[-1] > 30000:
         print(point)
         if ui.screenActivateButton.contains(point):
             ui.enableScreen()
             lastButtonPush = time.monotonic()
 
-        if ui.screenEnabled:
-            for i, button in enumerate(ui.modeButtons):
-                if button.contains(point):
-                    lastButtonPush = time.monotonic()
-                    if i == 0:
-                        feeds.publish(feeds.modeSettingFeed, "manual")
-                        feeds.publish(feeds.fanSettingFeed, ui.fanSetting)
-                        ui.fanControl = 1
-                        ui.updateMode("manual")
-                    elif i == 1:
-                        feeds.publish(feeds.modeSettingFeed, "warm")
-                        ui.updateMode("warm")
-                    elif i == 2:
-                        feeds.publish(feeds.modeSettingFeed, "cool")
-                        ui.updateMode("cool")
+    if point and ui.screenEnabled:
+        for i, button in enumerate(ui.modeButtons):
+            if button.contains(point):
+                lastButtonPush = time.monotonic()
+                if i == 0:
+                    feeds.publish(feeds.modeSettingFeed, "manual")
+                    feeds.publish(feeds.fanSettingFeed, ui.fanSetting)
+                    ui.fanControl = 1
+                    ui.updateMode("manual")
+                elif i == 1:
+                    feeds.publish(feeds.modeSettingFeed, "warm")
+                    ui.updateMode("warm")
+                elif i == 2:
+                    feeds.publish(feeds.modeSettingFeed, "cool")
+                    ui.updateMode("cool")
 
-            # check temperature buttons
-            for i, button in enumerate(ui.temperatureButtons):
-                if button.contains(point):
-                    lastButtonPush = time.monotonic()
-                    if i == 0:
-                        feeds.publish(feeds.temperatureSettingFeed, ui.temperatureSetting + 1)
-                        ui.updateTemperature(ui.temperatureSetting + 1)
-                    elif i == 1:
-                        feeds.publish(feeds.temperatureSettingFeed, ui.temperatureSetting - 1)
-                        ui.updateTemperature(ui.temperatureSetting - 1)
-            
-            # check fan buttons
-            for i, button in enumerate(ui.fanButtons):
-                if button.contains(point):
-                    lastButtonPush = time.monotonic()
-                    if i == 0:
-                        if ui.fanControl == 1:
-                            feeds.publish(feeds.fanSettingFeed, "0")
-                        ui.updateFanSpeed("0")
-                    else:
-                        newFanSpeed = 4 - i
-                        if ui.fanControl == 1:
-                            feeds.publish(feeds.fanSettingFeed, str(newFanSpeed))
-                        ui.updateFanSpeed(str(newFanSpeed))
+        # check temperature buttons
+        for i, button in enumerate(ui.temperatureButtons):
+            if button.contains(point):
+                lastButtonPush = time.monotonic()
+                if i == 0:
+                    feeds.publish(feeds.temperatureSettingFeed, ui.temperatureSetting + 1)
+                    ui.updateTemperature(ui.temperatureSetting + 1)
+                elif i == 1:
+                    feeds.publish(feeds.temperatureSettingFeed, ui.temperatureSetting - 1)
+                    ui.updateTemperature(ui.temperatureSetting - 1)
+        
+        # check fan buttons
+        for i, button in enumerate(ui.fanButtons):
+            if button.contains(point):
+                lastButtonPush = time.monotonic()
+                if i == 0:
+                    if ui.fanControl == 1:
+                        feeds.publish(feeds.fanSettingFeed, "0")
+                    ui.updateFanSpeed("0")
+                else:
+                    newFanSpeed = 4 - i
+                    if ui.fanControl == 1:
+                        feeds.publish(feeds.fanSettingFeed, str(newFanSpeed))
+                    ui.updateFanSpeed(str(newFanSpeed))
         time.sleep(.075)
 
 
