@@ -58,7 +58,7 @@ increaseIcon = Group(x=92, y=0)
 increaseIcon.append(styles.icons["chevron_up"])
 decreaseIcon = Group(x=92, y=135)
 decreaseIcon.append(styles.icons["chevron_down"])
-temperatureSettingLabel = Label(font, color=styles.colors["white"], x=75, y=95)
+temperatureSettingLabel = Label(font, color=styles.colors["white"], x=75, y=95, text=str(temperatureSetting))
 temperatureSettingLabel.scale = 7
 temperatureDiv.append(increaseIcon)
 temperatureDiv.append(decreaseIcon)
@@ -75,7 +75,7 @@ def updateMode(newMode):
     temperatureSettingLabel.color = styles.colors[newMode]
 
     if modeSetting == "warm":
-        status_light.fill((227, 93, 20))
+        status_light.fill((245, 99, 2))
         status_light.show()
         warmIcon.hidden = False
         coolIcon.hidden = True
@@ -235,16 +235,17 @@ fanLowButton = Button(
 ui.append(fanLowButton)
 fanButtons.append(fanLowButton)
 
-centerScreenButton = Button(
-    x=temperatureDiv.x,
-    y=temperatureDiv.y,
-    width=screen_width,
-    height=100,
+screenActivateButtonOffset = 50
+screenActivateButton = Button(
+    x=screenActivateButtonOffset,
+    y=screenActivateButtonOffset,
+    width=screen_width - (2 * screenActivateButtonOffset),
+    height=screen_height - (2 * screenActivateButtonOffset),
     fill_color=None,
     outline_color=None,
     style=Button.RECT
 )
-ui.append(centerScreenButton)
+ui.append(screenActivateButton)
 
 def checkTarget(button, touch):
     touchX = touch[0]
@@ -262,14 +263,14 @@ def checkTarget(button, touch):
 # set backlight with a value between 0 and 1
 def set_backlight(val):
     display.brightness = val
+    status_light.brightness = val
+    status_light.show()
 
 def disableScreen():
     global screenEnabled
     if screenEnabled:
         print("Disabling screen")
-        set_backlight(.1)
-        status_light.brightness = .2
-        status_light.show()
+        set_backlight(.05)
         temperatureDiv.hidden = True
         fanSelectorDiv.hidden = True
         screenEnabled = False
@@ -279,8 +280,6 @@ def enableScreen():
     if not screenEnabled:
         print("Enabling screen")
         set_backlight(1)
-        status_light.brightness = 1
-        status_light.show()
         temperatureDiv.hidden = False
         fanSelectorDiv.hidden = False
         screenEnabled = True

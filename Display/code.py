@@ -34,51 +34,54 @@ def checkButtons():
     point = ui.ts.touch_point
 
     # touch detected
-    if point:
-        if ui.centerScreenButton.contains(point):
+    if point and point[-1] > 3000:
+        print(point)
+        if ui.screenActivateButton.contains(point):
             ui.enableScreen()
             lastButtonPush = time.monotonic()
 
-        for i, button in enumerate(ui.modeButtons):
-            if button.contains(point):
-                lastButtonPush = time.monotonic()
-                if i == 0:
-                    io.publish(feeds.modeSettingFeed, "manual")
-                    io.publish(feeds.fanSettingFeed, ui.fanSetting)
-                    ui.fanControl = 1
-                    ui.updateMode("manual")
-                elif i == 1:
-                    io.publish(feeds.modeSettingFeed, "warm")
-                    ui.updateMode("warm")
-                elif i == 2:
-                    io.publish(feeds.modeSettingFeed, "cool")
-                    ui.updateMode("cool")
+        if ui.screenEnabled:
+            for i, button in enumerate(ui.modeButtons):
+                if button.contains(point):
+                    lastButtonPush = time.monotonic()
+                    if i == 0:
+                        feeds.publish(feeds.modeSettingFeed, "manual")
+                        feeds.publish(feeds.fanSettingFeed, ui.fanSetting)
+                        ui.fanControl = 1
+                        ui.updateMode("manual")
+                    elif i == 1:
+                        feeds.publish(feeds.modeSettingFeed, "warm")
+                        ui.updateMode("warm")
+                    elif i == 2:
+                        feeds.publish(feeds.modeSettingFeed, "cool")
+                        ui.updateMode("cool")
 
-        # check temperature buttons
-        for i, button in enumerate(ui.temperatureButtons):
-            if button.contains(point):
-                lastButtonPush = time.monotonic()
-                if i == 0:
-                    io.publish(feeds.temperatureSettingFeed, ui.temperatureSetting + 1)
-                    ui.updateTemperature(ui.temperatureSetting + 1)
-                elif i == 1:
-                    io.publish(feeds.temperatureSettingFeed, ui.temperatureSetting - 1)
-                    ui.updateTemperature(ui.temperatureSetting - 1)
-        
-        # check fan buttons
-        for i, button in enumerate(ui.fanButtons):
-            if button.contains(point):
-                lastButtonPush = time.monotonic()
-                if i == 0:
-                    if ui.fanControl == 1:
-                        io.publish(feeds.fanSettingFeed, "0")
-                    ui.updateFanSpeed("0")
-                else:
-                    newFanSpeed = 4 - i
-                    if ui.fanControl == 1:
-                        io.publish(feeds.fanSettingFeed, str(newFanSpeed))
-                    ui.updateFanSpeed(str(newFanSpeed))
+            # check temperature buttons
+            for i, button in enumerate(ui.temperatureButtons):
+                if button.contains(point):
+                    lastButtonPush = time.monotonic()
+                    if i == 0:
+                        feeds.publish(feeds.temperatureSettingFeed, ui.temperatureSetting + 1)
+                        ui.updateTemperature(ui.temperatureSetting + 1)
+                    elif i == 1:
+                        feeds.publish(feeds.temperatureSettingFeed, ui.temperatureSetting - 1)
+                        ui.updateTemperature(ui.temperatureSetting - 1)
+            
+            # check fan buttons
+            for i, button in enumerate(ui.fanButtons):
+                if button.contains(point):
+                    lastButtonPush = time.monotonic()
+                    if i == 0:
+                        if ui.fanControl == 1:
+                            feeds.publish(feeds.fanSettingFeed, "0")
+                        ui.updateFanSpeed("0")
+                    else:
+                        newFanSpeed = 4 - i
+                        if ui.fanControl == 1:
+                            feeds.publish(feeds.fanSettingFeed, str(newFanSpeed))
+                        ui.updateFanSpeed(str(newFanSpeed))
         time.sleep(.075)
+
 
 def checkTemperature():
     currTemp = adt.temperature * 1.8 + 32 - 18
@@ -88,25 +91,26 @@ def checkTemperature():
         if (currTemp <= ui.temperatureSetting):
             if ui.fanControl != 1:
                 print("Turning on the fan")
-                io.publish(feeds.fanSettingFeed, ui.fanSetting)
+                feeds.publish(feeds.fanSettingFeed, ui.fanSetting)
                 ui.fanControl = 1
         else:
             if ui.fanControl != 0:
                 print("Turning off the fan")
-                io.publish(feeds.fanSettingFeed, "0")
+                feeds.publish(feeds.fanSettingFeed, "0")
                 ui.fanControl = 0
     elif ui.modeSetting == "cool":
         if (currTemp >= ui.temperatureSetting):
             if ui.fanControl != 1:
                 print("Turning on the fan")
-                io.publish(feeds.fanSettingFeed, ui.fanSetting)
+                feeds.publish(feeds.fanSettingFeed, ui.fanSetting)
                 ui.fanControl = 1
         else:
             if ui.fanControl != 0:
-                io.publish(feeds.fanSettingFeed, "0")
+                feeds.publish(feeds.fanSettingFeed, "0")
                 ui.fanControl = 0
 
 checkTemperature()
+ui.updateMode("manual")
 prev_refresh_time = 0.0
 while True:
     checkButtons()
