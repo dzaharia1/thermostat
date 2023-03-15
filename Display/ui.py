@@ -3,7 +3,7 @@ from displayio import Group
 import styles
 import board
 import terminalio
-import pwmio
+import neopixel
 from adafruit_display_text.label import Label
 from adafruit_button import Button
 import adafruit_touchscreen
@@ -13,6 +13,7 @@ display = board.DISPLAY
 display.rotation = 270
 screen_width = 240
 screen_height = 320
+status_light = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=0.2)
 
 ts = adafruit_touchscreen.Touchscreen(
         board.TOUCH_YD,
@@ -74,6 +75,8 @@ def updateMode(newMode):
     temperatureSettingLabel.color = styles.colors[newMode]
 
     if modeSetting == "warm":
+        status_light.fill((227, 93, 20))
+        status_light.show()
         warmIcon.hidden = False
         coolIcon.hidden = True
         manualIcon.hidden = True
@@ -81,6 +84,8 @@ def updateMode(newMode):
         decreaseIcon.hidden = False
         temperatureSettingLabel.hidden = False
     elif modeSetting == "cool":
+        status_light.fill((20, 110, 227))
+        status_light.show()
         warmIcon.hidden = True
         coolIcon.hidden = False
         manualIcon.hidden = True
@@ -88,6 +93,8 @@ def updateMode(newMode):
         decreaseIcon.hidden = False
         temperatureSettingLabel.hidden = False
     elif modeSetting == "manual":
+        status_light.fill((255, 255, 255))
+        status_light.show()
         warmIcon.hidden = True
         coolIcon.hidden = True
         manualIcon.hidden = False
@@ -260,12 +267,11 @@ def disableScreen():
     global screenEnabled
     if screenEnabled:
         print("Disabling screen")
-        set_backlight(.2)
+        set_backlight(.1)
+        status_light.brightness = .2
+        status_light.show()
         temperatureDiv.hidden = True
         fanSelectorDiv.hidden = True
-        warmIcon.hidden = True
-        coolIcon.hidden = True
-        manualIcon.hidden = True
         screenEnabled = False
 
 def enableScreen():
@@ -273,12 +279,8 @@ def enableScreen():
     if not screenEnabled:
         print("Enabling screen")
         set_backlight(1)
+        status_light.brightness = 1
+        status_light.show()
         temperatureDiv.hidden = False
         fanSelectorDiv.hidden = False
-        if modeSetting == "warm":
-            warmIcon.hidden = False
-        elif modeSetting == "cool":
-            coolIcon.hidden = False
-        elif modeSetting == "manual":
-            manualIcon.hidden = False
         screenEnabled = True
