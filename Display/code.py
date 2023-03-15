@@ -3,18 +3,17 @@ import time
 import terminalio
 import busio
 import adafruit_adt7410
+from analogio import AnalogIn
 font = terminalio.FONT
 from math import floor
-
 import ui
 import feeds
 from feeds import io
-import styles
-from adafruit_pyportal import PyPortal
 
 i2c_bus = busio.I2C(board.SCL, board.SDA)
 adt = adafruit_adt7410.ADT7410(i2c_bus, address=0x48)
 adt.high_resolution = True
+lightSensor = AnalogIn(board.LIGHT)
 
 def message(client, feed_id, payload):
     print(feed_id, "is set to", payload)
@@ -28,15 +27,21 @@ def message(client, feed_id, payload):
 io.on_message = message
 print("Connecting to IO...")
 io.connect()
-# io.loop(.1)
 
-lastTempButtonPush = 0.0
+lastButtonPush = 0.0
 def checkButtons():
+    global lastButtonPush
     point = ui.ts.touch_point
+
+    # touch detected
     if point:
-        # check mode buttons
+        if ui.centerScreenButton.contains(point):
+            ui.enableScreen()
+            lastButtonPush = time.monotonic()
+
         for i, button in enumerate(ui.modeButtons):
             if button.contains(point):
+                lastButtonPush = time.monotonic()
                 if i == 0:
                     io.publish(feeds.modeSettingFeed, "manual")
                     io.publish(feeds.fanSettingFeed, ui.fanSetting)
@@ -52,8 +57,7 @@ def checkButtons():
         # check temperature buttons
         for i, button in enumerate(ui.temperatureButtons):
             if button.contains(point):
-                global lastTempButtonPush
-                lastTempButtonPush = time.monotonic()
+                lastButtonPush = time.monotonic()
                 if i == 0:
                     io.publish(feeds.temperatureSettingFeed, ui.temperatureSetting + 1)
                     ui.updateTemperature(ui.temperatureSetting + 1)
@@ -64,6 +68,7 @@ def checkButtons():
         # check fan buttons
         for i, button in enumerate(ui.fanButtons):
             if button.contains(point):
+                lastButtonPush = time.monotonic()
                 if i == 0:
                     if ui.fanControl == 1:
                         io.publish(feeds.fanSettingFeed, "0")
@@ -76,7 +81,7 @@ def checkButtons():
         time.sleep(.075)
 
 def checkTemperature():
-    currTemp = adt.temperature * 1.8 + 32 - 21
+    currTemp = adt.temperature * 1.8 + 32 - 18
     ui.currTempLabel.text = str(floor(currTemp)) + "F"
     
     if ui.modeSetting == "warm":
@@ -101,17 +106,15 @@ def checkTemperature():
                 io.publish(feeds.fanSettingFeed, "0")
                 ui.fanControl = 0
 
-                
-
-print("Starting loop")
-prev_refresh_time = 0.0
 checkTemperature()
-
+prev_refresh_time = 0.0
 while True:
     checkButtons()
+    if (time.monotonic() - lastButtonPush) > 10 :
+        ui.disableScreen()
     if (time.monotonic() - prev_refresh_time) > 15:
+        print("Refreshing data")
         checkTemperature()
-        print("repinging")
         try:
             io.get(feeds.temperatureSettingFeed)
         except (ValueError, RuntimeError) as e:
@@ -121,4 +124,3 @@ while True:
             continue
         prev_refresh_time = time.monotonic()
     time.sleep(.01)
-    # io.loop(timeout=.1)

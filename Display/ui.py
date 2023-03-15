@@ -1,8 +1,9 @@
-import displayio
+from analogio import AnalogOut
 from displayio import Group
 import styles
 import board
 import terminalio
+import pwmio
 from adafruit_display_text.label import Label
 from adafruit_button import Button
 import adafruit_touchscreen
@@ -27,6 +28,7 @@ temperatureSetting = 70
 fanControl = 1
 fanRun = 0
 modeSetting = "manual"
+screenEnabled = True
 
 ui = Group(x=0, y=0)
 topBarDiv = Group(x=10, y=10)
@@ -39,11 +41,11 @@ ui.append(topBarDiv)
 # build out top bar
 currTempLabel = Label(font, color=styles.colors["white"], x=5, y=20)
 currTempLabel.scale = 2
-warmIcon =  Group(x=84, y=0)
+warmIcon = Group(x=84, y=0)
 warmIcon.append(styles.icons['warm'])
-coolIcon =  Group(x=84, y=0)
+coolIcon = Group(x=84, y=0)
 coolIcon.append(styles.icons["cool"])
-manualIcon =  Group(x=84, y=0)
+manualIcon = Group(x=84, y=0)
 manualIcon.append(styles.icons["manual"])
 topBarDiv.append(currTempLabel)
 topBarDiv.append(warmIcon)
@@ -226,6 +228,17 @@ fanLowButton = Button(
 ui.append(fanLowButton)
 fanButtons.append(fanLowButton)
 
+centerScreenButton = Button(
+    x=temperatureDiv.x,
+    y=temperatureDiv.y,
+    width=screen_width,
+    height=100,
+    fill_color=None,
+    outline_color=None,
+    style=Button.RECT
+)
+ui.append(centerScreenButton)
+
 def checkTarget(button, touch):
     touchX = touch[0]
     touchY = touch[1]
@@ -238,3 +251,34 @@ def checkTarget(button, touch):
         return True
     else:
         return False
+
+# set backlight with a value between 0 and 1
+def set_backlight(val):
+    display.brightness = val
+
+def disableScreen():
+    global screenEnabled
+    if screenEnabled:
+        print("Disabling screen")
+        set_backlight(.2)
+        temperatureDiv.hidden = True
+        fanSelectorDiv.hidden = True
+        warmIcon.hidden = True
+        coolIcon.hidden = True
+        manualIcon.hidden = True
+        screenEnabled = False
+
+def enableScreen():
+    global screenEnabled
+    if not screenEnabled:
+        print("Enabling screen")
+        set_backlight(1)
+        temperatureDiv.hidden = False
+        fanSelectorDiv.hidden = False
+        if modeSetting == "warm":
+            warmIcon.hidden = False
+        elif modeSetting == "cool":
+            coolIcon.hidden = False
+        elif modeSetting == "manual":
+            manualIcon.hidden = False
+        screenEnabled = True
