@@ -5,6 +5,7 @@ from adafruit_motor import servo
 import ssl
 import socketpool
 import wifi
+from digitalio import DigitalInOut
 import adafruit_minimqtt.adafruit_minimqtt as MQTT
 from adafruit_io.adafruit_io import IO_MQTT
 from secrets import secrets
@@ -12,8 +13,8 @@ from secrets import secrets
 # set up servo
 pwm = pwmio.PWMOut(board.A12, duty_cycle=2 ** 15, frequency=50)
 servo = servo.Servo(pwm)
-rotationRange = 100
-zeroAngle = 45
+rotationRange = 120
+zeroAngle = 48
 servo.angle = zeroAngle
 
 # set up adafruit io
