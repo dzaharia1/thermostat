@@ -26,6 +26,13 @@ def connected(client):
 def disconnected(client):
     print("Disconnected from IO")
 
+def publish(feed, data):
+    try:
+        io.publish(feed, data)
+    except:
+        wifi.reset()
+        io.reconnect()
+
 wifi.connect()
 
 mqtt_client = MQTT(
