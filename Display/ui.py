@@ -7,6 +7,7 @@ import terminalio
 import neopixel
 from adafruit_display_text.label import Label
 from adafruit_button import Button
+from adafruit_bitmap_font import bitmap_font
 import adafruit_touchscreen
 
 font = terminalio.FONT
@@ -15,6 +16,8 @@ display.rotation = 270
 screen_width = 240
 screen_height = 320
 status_light = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=0.2)
+smallText = bitmap_font.load_font("fonts/roboto-mono-32.bdf")
+largeText = bitmap_font.load_font("fonts/roboto-mono-90.bdf")
 
 ts = adafruit_touchscreen.Touchscreen(
         board.TOUCH_YD,
@@ -41,8 +44,8 @@ ui.append(fanSelectorDiv)
 ui.append(topBarDiv)
 
 # build out top bar
-currTempLabel = Label(font, color=styles.colors["white"], x=5, y=20)
-currTempLabel.scale = 2
+currTempLabel = Label(font=smallText, color=styles.colors["white"], x=5, y=20)
+# currTempLabel.scale = 2
 warmIcon = Group(x=84, y=0)
 warmIcon.append(styles.icons['warm'])
 coolIcon = Group(x=84, y=0)
@@ -59,8 +62,7 @@ increaseIcon = Group(x=92, y=0)
 increaseIcon.append(styles.icons["chevron_up"])
 decreaseIcon = Group(x=92, y=135)
 decreaseIcon.append(styles.icons["chevron_down"])
-temperatureSettingLabel = Label(font, color=styles.colors["white"], x=75, y=95, text=str(temperatureSetting))
-temperatureSettingLabel.scale = 7
+temperatureSettingLabel = Label(font=largeText, color=styles.colors["white"], x=68, y=90, text=str(temperatureSetting))
 temperatureDiv.append(increaseIcon)
 temperatureDiv.append(decreaseIcon)
 temperatureDiv.append(temperatureSettingLabel)
@@ -280,14 +282,16 @@ def disableScreen():
         warmIcon.hidden = True
         coolIcon.hidden = True
         manualIcon.hidden = True
-        currTempLabel.scale = 5
+        currTempLabel.font = largeText
+        currTempLabel.y = 60
 
 def enableScreen():
     global screenEnabled
     if not screenEnabled:
         screenEnabled = True
         set_backlight(1)
-        currTempLabel.scale = 2
+        currTempLabel.font = smallText
+        currTempLabel.y = 20
         fanSelectorDiv.hidden = False
         if modeSetting == "warm":
             warmIcon.hidden = False

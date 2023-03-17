@@ -59,7 +59,6 @@ def checkButtons():
         for i, button in enumerate(ui.temperatureButtons):
             if button.contains(point):
                 lastButtonPush = time.monotonic()
-                checkTemperature()
                 if i == 0:
                     feeds.publish(feeds.temperatureSettingFeed, ui.temperatureSetting + 1)
                     ui.updateTemperature(ui.temperatureSetting + 1)
