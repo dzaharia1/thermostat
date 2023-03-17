@@ -44,27 +44,27 @@ def checkButtons():
             if button.contains(point):
                 lastButtonPush = time.monotonic()
                 if i == 0:
+                    ui.updateMode("manual")
+                    ui.fanControl = 1
                     feeds.publish(feeds.modeSettingFeed, "manual")
                     feeds.publish(feeds.fanSettingFeed, ui.fanSetting)
-                    ui.fanControl = 1
-                    ui.updateMode("manual")
                 elif i == 1:
-                    feeds.publish(feeds.modeSettingFeed, "warm")
                     ui.updateMode("warm")
+                    feeds.publish(feeds.modeSettingFeed, "warm")
                 elif i == 2:
-                    feeds.publish(feeds.modeSettingFeed, "cool")
                     ui.updateMode("cool")
+                    feeds.publish(feeds.modeSettingFeed, "cool")
 
         # check temperature buttons
         for i, button in enumerate(ui.temperatureButtons):
             if button.contains(point):
                 lastButtonPush = time.monotonic()
                 if i == 0:
-                    feeds.publish(feeds.temperatureSettingFeed, ui.temperatureSetting + 1)
                     ui.updateTemperature(ui.temperatureSetting + 1)
+                    feeds.publish(feeds.temperatureSettingFeed, ui.temperatureSetting + 1)
                 elif i == 1:
-                    feeds.publish(feeds.temperatureSettingFeed, ui.temperatureSetting - 1)
                     ui.updateTemperature(ui.temperatureSetting - 1)
+                    feeds.publish(feeds.temperatureSettingFeed, ui.temperatureSetting - 1)
         
         # check fan buttons
         for i, button in enumerate(ui.fanButtons):
