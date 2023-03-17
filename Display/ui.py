@@ -259,7 +259,7 @@ def refresh_status_light():
     if fanControl and screenEnabled and fanSetting != "0":
         status_light.brightness = 1
     elif fanControl and not screenEnabled and fanSetting != "0":
-        status_light.brightness = .1
+        status_light.brightness = .3
     elif not fanControl or fanSetting == "0":
         status_light.brightness = 0
 
@@ -277,12 +277,23 @@ def disableScreen():
         set_backlight(.05)
         temperatureDiv.hidden = True
         fanSelectorDiv.hidden = True
+        warmIcon.hidden = True
+        coolIcon.hidden = True
+        manualIcon.hidden = True
+        currTempLabel.scale = 5
 
 def enableScreen():
     global screenEnabled
     if not screenEnabled:
         screenEnabled = True
         set_backlight(1)
+        currTempLabel.scale = 2
         fanSelectorDiv.hidden = False
-        if modeSetting != "manual":
+        if modeSetting == "warm":
+            warmIcon.hidden = False
             temperatureDiv.hidden = False
+        elif modeSetting == "cool":
+            coolIcon.hidden = False
+            temperatureDiv.hidden = False
+        if modeSetting == "manual":
+            manualIcon.hidden = False

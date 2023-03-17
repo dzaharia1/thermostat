@@ -35,7 +35,6 @@ def checkButtons():
 
     # touch detected
     if point and point[-1] > 30000:
-        print(point)
         if ui.screenActivateButton.contains(point):
             ui.enableScreen()
             lastButtonPush = time.monotonic()
