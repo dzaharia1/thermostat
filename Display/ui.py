@@ -96,6 +96,7 @@ def updateMode(newMode):
         coolIcon.hidden = True
         manualIcon.hidden = False
         temperatureDiv.hidden = True
+        refresh_status_light()
 
 def updateTemperature(newTemperature):
     global temperatureSetting
@@ -254,39 +255,34 @@ def checkTarget(button, touch):
     else:
         return False
 
+def refresh_status_light():
+    if fanControl and screenEnabled and fanSetting != "0":
+        status_light.brightness = 1
+    elif fanControl and not screenEnabled and fanSetting != "0":
+        status_light.brightness = .1
+    elif not fanControl or fanSetting == "0":
+        status_light.brightness = 0
+
+    status_light.show()
+
 # set backlight with a value between 0 and 1
 def set_backlight(val):
     display.brightness = val
-    status_light.brightness = val
-    if fanControl == 1:
-        status_light.show()
+    refresh_status_light()
 
 def disableScreen():
     global screenEnabled
     if screenEnabled:
+        screenEnabled = False
         set_backlight(.05)
         temperatureDiv.hidden = True
         fanSelectorDiv.hidden = True
-        screenEnabled = False
 
 def enableScreen():
     global screenEnabled
     if not screenEnabled:
+        screenEnabled = True
         set_backlight(1)
         fanSelectorDiv.hidden = False
         if modeSetting != "manual":
             temperatureDiv.hidden = False
-        screenEnabled = True
-
-def toggleLed(state):
-    originalBrightness = status_light.brightness
-    if state:
-        for i in range(0, 101, 5):
-            status_light.brightness = originalBrightness * (i / 100)
-            status_light.show()
-            time.sleep(.02)
-    else:
-        for i in range(0, 101, 5):
-            status_light.brightness = originalBrightness  - (i / 100)
-            status_light.show()
-            time.sleep(.02)

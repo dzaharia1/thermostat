@@ -75,13 +75,13 @@ def checkButtons():
                     if ui.fanControl == 1:
                         feeds.publish(feeds.fanSettingFeed, "0")
                     ui.updateFanSpeed("0")
-                    ui.toggleLed(False)
+                    ui.set_backlight(1)
                 else:
                     newFanSpeed = 4 - i
                     if ui.fanControl == 1:
                         feeds.publish(feeds.fanSettingFeed, str(newFanSpeed))
                     ui.updateFanSpeed(str(newFanSpeed))
-                    ui.toggleLed(True)
+                    ui.set_backlight(1)
         time.sleep(.075)
 
 
@@ -95,30 +95,30 @@ def checkTemperature():
             if ui.fanControl != 1:
                 feeds.publish(feeds.fanSettingFeed, ui.fanSetting)
                 ui.fanControl = 1
-                ui.toggleLed(True)
+                ui.refresh_status_light()
         else:
             if ui.fanControl != 0:
                 feeds.publish(feeds.fanSettingFeed, "0")
                 ui.fanControl = 0
-                ui.toggleLed(False)
+                ui.refresh_status_light()
     elif ui.modeSetting == "cool":
         if (currTemp >= ui.temperatureSetting):
             if ui.fanControl != 1:
                 feeds.publish(feeds.fanSettingFeed, ui.fanSetting)
                 ui.fanControl = 1
-                ui.toggleLed(True)
+                ui.refresh_status_light()
         else:
             if ui.fanControl != 0:
                 feeds.publish(feeds.fanSettingFeed, "0")
                 ui.fanControl = 0
-                ui.toggleLed(False)
+                ui.refresh_status_light()
 
 checkTemperature()
 ui.updateMode("manual")
 prev_refresh_time = 0.0
 while True:
     checkButtons()
-    if (time.monotonic() - lastButtonPush) > 10 :
+    if (time.monotonic() - lastButtonPush) > 15 :
         ui.disableScreen()
     if (time.monotonic() - prev_refresh_time) > 40:
         print("Refreshing data")
