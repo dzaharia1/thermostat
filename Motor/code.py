@@ -67,9 +67,13 @@ io.on_message = message
 
 print("Connecting to Adafruit IO...")
 io.connect()
-io.loop()
 io.get(fanFeed)
+io.loop()
 
 while True:
-    io.loop()
+    try:
+        io.loop()
+    except:
+        wifi.radio.connect(secrets["ssid"], secrets["password"])
+        io.reconnect()
     time.sleep(.25)
