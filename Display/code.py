@@ -2,7 +2,7 @@ import board
 import time
 import terminalio
 import busio
-import adafruit_adt7410
+import adafruit_htu31d
 from analogio import AnalogIn
 font = terminalio.FONT
 from math import floor
@@ -11,8 +11,7 @@ import feeds
 from feeds import io
 
 i2c_bus = busio.I2C(board.SCL, board.SDA)
-adt = adafruit_adt7410.ADT7410(i2c_bus, address=0x48)
-adt.high_resolution = True
+temp_probe = adafruit_htu31d.HTU31D(i2c_bus)
 lightSensor = AnalogIn(board.LIGHT)
 
 def message(client, feed_id, payload):
@@ -85,7 +84,7 @@ def checkButtons():
 
 
 def checkTemperature():
-    currTemp = adt.temperature * 1.8 + 32 - 18
+    currTemp = temp_probe.temperature * (9 / 5) + 32 - 4
     ui.currTempLabel.text = str(floor(currTemp)) + "F"
     feeds.publish(feeds.temperatureReadingFeed, currTemp)
     
