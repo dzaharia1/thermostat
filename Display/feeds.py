@@ -32,6 +32,7 @@ def publish(feed, data):
         io.publish(feed, data)
     except:
         wifi.reset()
+        wifi.connect()
         io.reconnect()
 
 wifi.connect()
