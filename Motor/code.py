@@ -15,7 +15,6 @@ pwm = pwmio.PWMOut(board.A12, duty_cycle=2 ** 15, frequency=50)
 servo = servo.Servo(pwm)
 rotationRange = 120
 zeroAngle = 48
-servo.angle = zeroAngle
 
 # set up adafruit io
 groupName = "thermostat"
@@ -72,7 +71,7 @@ io.loop()
 
 while True:
     try:
-        io.loop()
+        io.loop(timeout=40)
     except:
         wifi.radio.connect(secrets["ssid"], secrets["password"])
         io.reconnect()
