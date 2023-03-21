@@ -23,9 +23,22 @@ def message(client, feed_id, payload):
     if (feed_id == feeds.modeSettingFeed):
         ui.updateMode(payload)
 
+def connected(client):
+    io.subscribe(feeds.temperatureSettingFeed)
+    io.subscribe(feeds.fanSettingFeed)
+    io.subscribe(feeds.modeSettingFeed)
+    io.get(feeds.temperatureSettingFeed)
+    io.get(feeds.fanSettingFeed)
+    io.get(feeds.modeSettingFeed)
+
+
 io.on_message = message
-print("Connecting to IO...")
+io.on_connect = connected
 io.connect()
+ui.updateTemperature(int(feeds.io_http.get_feed(feeds.temperatureSettingFeed)["last_value"]))
+ui.updateFanSpeed(feeds.io_http.get_feed(feeds.fanSettingFeed)["last_value"])
+ui.updateMode(feeds.io_http.get_feed(feeds.modeSettingFeed)["last_value"])
+print("Just finished getting last data")
 
 lastButtonPush = 0.0
 def checkButtons():
@@ -112,7 +125,7 @@ def checkTemperature():
                 ui.refresh_status_light()
 
 checkTemperature()
-ui.updateMode("manual")
+
 prev_refresh_time = 0.0
 while True:
     checkButtons()

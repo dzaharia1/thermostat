@@ -7,8 +7,9 @@ from adafruit_esp32spi import adafruit_esp32spi_wifimanager
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
 from adafruit_minimqtt.adafruit_minimqtt import MQTT
 from adafruit_io.adafruit_io import IO_MQTT
+from adafruit_io.adafruit_io import IO_HTTP
+import adafruit_requests as requests
 from secrets import secrets
-
 
 esp32_cs = DigitalInOut(board.ESP_CS)
 esp32_ready = DigitalInOut(board.ESP_BUSY)
@@ -16,16 +17,18 @@ esp32_reset = DigitalInOut(board.ESP_RESET)
 spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
 esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
 wifi = adafruit_esp32spi_wifimanager.ESPSPI_WiFiManager(esp, secrets)
+requests.set_socket(socket, esp)
+
 temperatureSettingFeed = "thermostat.temperature-setting"
+temperatureReadingFeed = "thermostat.temperature-reading"
 fanSettingFeed = "thermostat.fan-setting"
 modeSettingFeed = "thermostat.mode"
-temperatureReadingFeed = "thermostat.temperature-reading"
-
-def connected(client):
-    print("Connected to AdafruitIO!")
 
 def disconnected(client):
     print("Disconnected from IO")
+    wifi.reset()
+    wifi.connect()
+    io.reconnect()
 
 def publish(feed, data):
     try:
@@ -46,6 +49,6 @@ mqtt_client = MQTT(
 )
 
 io = IO_MQTT(mqtt_client)
+io_http = IO_HTTP(secrets["aio_username"], secrets["aio_key"], requests)
 
-io.on_connect = connected
 io.on_disconnect = disconnected
