@@ -85,8 +85,10 @@ def checkButtons():
 
 def checkTemperature():
     currTemp = temp_probe.temperature * (9 / 5) + 32 - 4
-    ui.currTempLabel.text = str(floor(currTemp)) + "F"
+    currHumidity = temp_probe.relative_humidity
+    ui.currTempLabel.text = str(floor(currTemp)) + "F\n" + str(floor(currHumidity)) + "%"
     feeds.publish(feeds.temperatureReadingFeed, currTemp)
+    feeds.publish(feeds.humidityFeed, currHumidity)
     
     if ui.modeSetting == "warm":
         if (currTemp <= ui.temperatureSetting):
