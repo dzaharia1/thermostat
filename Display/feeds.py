@@ -16,10 +16,12 @@ esp32_reset = DigitalInOut(board.ESP_RESET)
 spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
 esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
 wifi = adafruit_esp32spi_wifimanager.ESPSPI_WiFiManager(esp, secrets)
+
 temperatureSettingFeed = "thermostat.temperature-setting"
 fanSettingFeed = "thermostat.fan-setting"
 modeSettingFeed = "thermostat.mode"
 temperatureReadingFeed = "thermostat.temperature-reading"
+humidityFeed = "thermostat.humidity-reading"
 
 def connected(client):
     print("Connected to AdafruitIO!")
