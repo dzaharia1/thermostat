@@ -82,9 +82,6 @@ def updateMode(newMode):
         coolIcon.hidden = True
         manualIcon.hidden = True
         temperatureDiv.hidden = False
-        # increaseIcon.hidden = False
-        # decreaseIcon.hidden = False
-        # temperatureSettingLabel.hidden = False
     elif modeSetting == "cool":
         status_light.fill((20, 110, 227))
         warmIcon.hidden = True
@@ -115,10 +112,6 @@ def updateFanSpeed(newSpeed):
         except:
             break
     fanSelectorDiv.append(styles.icons["fan_" + fanSetting])
-
-def showCurrentTemperature(temp):
-    # todo
-    return
 
 modeButtons = []
 temperatureButtons = []
