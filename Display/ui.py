@@ -44,8 +44,7 @@ ui.append(fanSelectorDiv)
 ui.append(topBarDiv)
 
 # build out top bar
-currTempLabel = Label(font=smallText, color=styles.colors["white"], x=5, y=20)
-# currTempLabel.scale = 2
+currTempLabel = Label(font=smallText, color=styles.colors["white"], x=5, y=20, line_spacing=.75)
 warmIcon = Group(x=84, y=0)
 warmIcon.append(styles.icons['warm'])
 coolIcon = Group(x=84, y=0)
