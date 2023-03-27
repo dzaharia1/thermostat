@@ -13,8 +13,8 @@ from secrets import secrets
 # set up servo
 pwm = pwmio.PWMOut(board.A12, duty_cycle=2 ** 15, frequency=50)
 servo = servo.Servo(pwm)
-rotationRange = 120
-zeroAngle = 48
+rotationRange = 130
+zeroAngle = 0
 
 # set up adafruit io
 groupName = "thermostat"
@@ -69,10 +69,14 @@ io.connect()
 io.get(fanFeed)
 io.loop()
 
+prev_refresh_time = 0.0
 while True:
     try:
+        if prev_refresh_time > 30:
+            io.get(fanFeed)
         io.loop(timeout=40)
     except:
         wifi.radio.connect(secrets["ssid"], secrets["password"])
         io.reconnect()
+    prev_refresh_time = time.monotonic()
     time.sleep(.25)
