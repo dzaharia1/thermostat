@@ -12,6 +12,7 @@ from feeds import io
 
 i2c_bus = busio.I2C(board.SCL, board.SDA)
 temp_probe = adafruit_htu31d.HTU31D(i2c_bus)
+temp_probe.heater = False
 lightSensor = AnalogIn(board.LIGHT)
 
 def message(client, feed_id, payload):
