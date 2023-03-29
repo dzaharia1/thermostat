@@ -61,10 +61,10 @@ def checkButtons():
                 lastButtonPush = time.monotonic()
                 if i == 0:
                     ui.updateTemperature(ui.temperatureSetting + 1)
-                    feeds.publish(feeds.temperatureSettingFeed, ui.temperatureSetting + 1)
+                    feeds.publish(feeds.temperatureSettingFeed, ui.temperatureSetting)
                 elif i == 1:
                     ui.updateTemperature(ui.temperatureSetting - 1)
-                    feeds.publish(feeds.temperatureSettingFeed, ui.temperatureSetting - 1)
+                    feeds.publish(feeds.temperatureSettingFeed, ui.temperatureSetting)
         
         # check fan buttons
         for i, button in enumerate(ui.fanButtons):
