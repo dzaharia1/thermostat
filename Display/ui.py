@@ -253,7 +253,7 @@ def refresh_status_light():
     if fanControl and screenEnabled and fanSetting != "0":
         status_light.brightness = 1
     elif fanControl and not screenEnabled and fanSetting != "0":
-        status_light.brightness = .3
+        status_light.brightness = .15
     elif not fanControl or fanSetting == "0":
         status_light.brightness = 0
 
