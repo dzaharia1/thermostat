@@ -8,7 +8,7 @@ font = terminalio.FONT
 from math import floor
 import ui
 import feeds
-from feeds import io
+from feeds import mqtt_client
 
 i2c_bus = busio.I2C(board.SCL, board.SDA)
 temp_probe = adafruit_htu31d.HTU31D(i2c_bus)
@@ -24,9 +24,8 @@ def message(client, feed_id, payload):
     if (feed_id == feeds.modeSettingFeed):
         ui.updateMode(payload)
 
-io.on_message = message
-print("Connecting to IO...")
-io.connect()
+print("Connecting to Home Assistant...")
+mqtt_client.connect()
 
 lastButtonPush = 0.0
 def checkButtons():

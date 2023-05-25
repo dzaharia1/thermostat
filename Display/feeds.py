@@ -1,12 +1,14 @@
+import time
+import json
+from adafruit_esp32spi.adafruit_esp32spi_socket import socket
+import alarm
 import board
 import busio
-import neopixel
 from digitalio import DigitalInOut
 from adafruit_esp32spi import adafruit_esp32spi
 from adafruit_esp32spi import adafruit_esp32spi_wifimanager
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
 from adafruit_minimqtt.adafruit_minimqtt import MQTT
-from adafruit_io.adafruit_io import IO_MQTT
 from secrets import secrets
 
 
@@ -17,11 +19,19 @@ spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
 esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
 wifi = adafruit_esp32spi_wifimanager.ESPSPI_WiFiManager(esp, secrets)
 
-temperatureSettingFeed = "thermostat.temperature-setting"
-fanSettingFeed = "thermostat.fan-setting"
-modeSettingFeed = "thermostat.mode"
-temperatureReadingFeed = "thermostat.temperature-reading"
-humidityFeed = "thermostat.humidity-reading"
+temperatureSettingFeed = "state/temp-setting"
+fanSettingFeed = "state/fan-setting"
+modeSettingFeed = "state/thermostat-mode"
+temperatureReadingFeed = "state/temp-sensor"
+humidityFeed = "state/temp-sensor"
+
+mqtt_client = MQTT(
+    broker = secrets["mqtt_broker"],
+    port = secrets["mqtt_port"],
+    username = secrets["mqtt_username"],
+    password = secrets["mqtt_password"],
+    socket_pool = socket
+)
 
 def connected(client):
     print("Connected to AdafruitIO!")
@@ -31,23 +41,15 @@ def disconnected(client):
 
 def publish(feed, data):
     try:
-        io.publish(feed, data)
+        mqtt_client.publish(feed, data)
     except:
         wifi.reset()
         wifi.connect()
-        io.reconnect()
+        mqtt_client.reconnect()
 
 wifi.connect()
 
-mqtt_client = MQTT(
-    broker="io.adafruit.com",
-    port=1883,
-    username=secrets["aio_username"],
-    password=secrets["aio_key"],
-    socket_pool=socket,
-)
+mqtt_client.on_connect = connected
+mqtt_client.on_disconnect = disconnected
 
-io = IO_MQTT(mqtt_client)
-
-io.on_connect = connected
-io.on_disconnect = disconnected
+# io = IO_MQTT(mqtt_client)
