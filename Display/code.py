@@ -24,9 +24,6 @@ def message(client, feed_id, payload):
     if (feed_id == feeds.modeSettingFeed):
         ui.updateMode(payload)
 
-print("Connecting to Home Assistant...")
-mqtt_client.connect()
-
 lastButtonPush = 0.0
 def checkButtons():
     global lastButtonPush

@@ -8,9 +8,8 @@ from digitalio import DigitalInOut
 from adafruit_esp32spi import adafruit_esp32spi
 from adafruit_esp32spi import adafruit_esp32spi_wifimanager
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
-from adafruit_minimqtt.adafruit_minimqtt import MQTT
+import adafruit_minimqtt.adafruit_minimqtt as MQTT
 from secrets import secrets
-
 
 esp32_cs = DigitalInOut(board.ESP_CS)
 esp32_ready = DigitalInOut(board.ESP_BUSY)
@@ -23,21 +22,26 @@ temperatureSettingFeed = "state/temp-setting"
 fanSettingFeed = "state/fan-setting"
 modeSettingFeed = "state/thermostat-mode"
 temperatureReadingFeed = "state/temp-sensor"
-humidityFeed = "state/temp-sensor"
-
-mqtt_client = MQTT(
-    broker = secrets["mqtt_broker"],
-    port = secrets["mqtt_port"],
-    username = secrets["mqtt_username"],
-    password = secrets["mqtt_password"],
-    socket_pool = socket
-)
+humidityFeed = "state/humidity-sensor"
 
 def connected(client):
-    print("Connected to AdafruitIO!")
+    print("Connected to HA!")
 
 def disconnected(client):
-    print("Disconnected from IO")
+    print("Disconnected from HA")
+
+print("Connecting to wifi")
+wifi.connect()
+print("Connected to wifi!")
+
+MQTT.set_socket(socket, esp)
+mqtt_client = MQTT.MQTT(
+    broker=secrets["mqtt_broker"],
+    port=secrets["mqtt_port"],
+    username=secrets["mqtt_username"],
+    password=secrets["mqtt_password"],
+    is_ssl=False
+)
 
 def publish(feed, data):
     try:
@@ -47,9 +51,8 @@ def publish(feed, data):
         wifi.connect()
         mqtt_client.reconnect()
 
-wifi.connect()
-
 mqtt_client.on_connect = connected
 mqtt_client.on_disconnect = disconnected
 
-# io = IO_MQTT(mqtt_client)
+print("Connecting to Home Assistant...")
+mqtt_client.connect(host="homeassistant.local")
