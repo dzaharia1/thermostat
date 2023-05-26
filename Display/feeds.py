@@ -39,8 +39,7 @@ mqtt_client = MQTT.MQTT(
     broker=secrets["mqtt_broker"],
     port=secrets["mqtt_port"],
     username=secrets["mqtt_username"],
-    password=secrets["mqtt_password"],
-    is_ssl=False
+    password=secrets["mqtt_password"]
 )
 
 def publish(feed, data):
@@ -54,5 +53,5 @@ def publish(feed, data):
 mqtt_client.on_connect = connected
 mqtt_client.on_disconnect = disconnected
 
-print("Connecting to Home Assistant...")
-mqtt_client.connect(host="homeassistant.local")
+print("Connecting to Home Assistant")
+mqtt_client.connect()
