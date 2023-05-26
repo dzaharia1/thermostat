@@ -1,7 +1,4 @@
-import time
-import json
 from adafruit_esp32spi.adafruit_esp32spi_socket import socket
-import alarm
 import board
 import busio
 from digitalio import DigitalInOut
@@ -55,3 +52,9 @@ mqtt_client.on_disconnect = disconnected
 
 print("Connecting to Home Assistant")
 mqtt_client.connect()
+
+mqtt_client.subscribe(temperatureSettingFeed)
+mqtt_client.subscribe(fanSettingFeed)
+mqtt_client.subscribe(modeSettingFeed)
+mqtt_client.subscribe(temperatureReadingFeed)
+mqtt_client.subscribe(humidityFeed)
