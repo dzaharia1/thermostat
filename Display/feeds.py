@@ -42,7 +42,7 @@ mqtt_client = MQTT.MQTT(
 
 def publish(feed, data):
     try:
-        mqtt_client.publish(feed, data)
+        mqtt_client.publish(feed, data, retain=True)
     except:
         wifi.reset()
         wifi.connect()
