@@ -17,8 +17,9 @@ wifi = adafruit_esp32spi_wifimanager.ESPSPI_WiFiManager(esp, secrets)
 
 temperatureSettingFeed = "state/temp-setting"
 fanSettingFeed = "state/fan-setting"
+fanSpeedFeed = "state/fan-speed"
 modeSettingFeed = "state/thermostat-mode"
-temperatureReadingFeed = "state/temp-sensor"
+temperatureSensorFeed = "state/temp-sensor"
 humidityFeed = "state/humidity-sensor"
 
 def connected(client):
@@ -29,7 +30,7 @@ def disconnected(client):
 
 print("Connecting to wifi")
 wifi.connect()
-print("Connected to wifi!")
+print("Connected to wifi as ", wifi.ip_address())
 
 MQTT.set_socket(socket, esp)
 mqtt_client = MQTT.MQTT(
@@ -47,7 +48,7 @@ def publish(feed, data):
         wifi.connect()
         mqtt_client.reconnect()
 
-mqtt_client.on_connect = connected
+# mqtt_client.on_connect = connected
 mqtt_client.on_disconnect = disconnected
 
 print("Connecting to Home Assistant")
@@ -56,5 +57,5 @@ mqtt_client.connect()
 mqtt_client.subscribe(temperatureSettingFeed)
 mqtt_client.subscribe(fanSettingFeed)
 mqtt_client.subscribe(modeSettingFeed)
-mqtt_client.subscribe(temperatureReadingFeed)
-mqtt_client.subscribe(humidityFeed)
+# mqtt_client.subscribe(temperatureSensorFeed)
+# mqtt_client.subscribe(humidityFeed)

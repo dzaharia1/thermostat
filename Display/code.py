@@ -36,6 +36,7 @@ def checkButtons():
             lastButtonPush = time.monotonic()
 
     if point and ui.screenEnabled:
+        # check mode buttons
         for i, button in enumerate(ui.modeButtons):
             if button.contains(point):
                 lastButtonPush = time.monotonic()
@@ -68,13 +69,13 @@ def checkButtons():
                 lastButtonPush = time.monotonic()
                 if i == 0:
                     if ui.fanControl == 1:
-                        feeds.publish(feeds.fanSettingFeed, "0")
+                        feeds.publish(feeds.fanSpeedFeed, "0")
                     ui.updateFanSpeed("0")
                     ui.set_backlight(1)
                 else:
                     newFanSpeed = 4 - i
                     if ui.fanControl == 1:
-                        feeds.publish(feeds.fanSettingFeed, str(newFanSpeed))
+                        feeds.publish(feeds.fanSpeedFeed, str(newFanSpeed))
                     ui.updateFanSpeed(str(newFanSpeed))
                     ui.set_backlight(1)
         time.sleep(.075)
@@ -84,7 +85,7 @@ def checkTemperature():
     currTemp = temp_probe.temperature * (9 / 5) + 32 - 4
     currHumidity = temp_probe.relative_humidity
     ui.currTempLabel.text = str(floor(currTemp)) + "F\n" + str(floor(currHumidity)) + "%"
-    feeds.publish(feeds.temperatureReadingFeed, currTemp)
+    feeds.publish(feeds.temperatureSensorFeed, currTemp)
     feeds.publish(feeds.humidityFeed, currHumidity)
     
     if ui.modeSetting == "warm":
@@ -109,6 +110,11 @@ def checkTemperature():
                 feeds.publish(feeds.fanSettingFeed, "0")
                 ui.fanControl = 0
                 ui.refresh_status_light()
+
+def mqtt_message(client):
+    1+1
+
+mqtt_client.on_message = mqtt_message
 
 checkTemperature()
 ui.updateMode("manual")
