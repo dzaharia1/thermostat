@@ -75,7 +75,7 @@ def updateMode(newMode):
     modeSetting = newMode
     temperatureSettingLabel.color = styles.colors[newMode]
 
-    if modeSetting == "warm":
+    if modeSetting == "heat":
         status_light.fill((245, 83, 2))
         warmIcon.hidden = False
         coolIcon.hidden = True
@@ -284,7 +284,7 @@ def enableScreen():
         currTempLabel.font = smallText
         currTempLabel.y = 20
         fanSelectorDiv.hidden = False
-        if modeSetting == "warm":
+        if modeSetting == "heat":
             warmIcon.hidden = False
             temperatureDiv.hidden = False
         elif modeSetting == "cool":

@@ -38,8 +38,8 @@ def checkButtons():
                     feeds.publish(feeds.fanSpeedFeed, ui.fanSpeed)
                     feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
                 elif i == 1:
-                    ui.updateMode("warm")
-                    feeds.publish(feeds.modeSettingFeed, "warm")
+                    ui.updateMode("heat")
+                    feeds.publish(feeds.modeSettingFeed, "heat")
                 elif i == 2:
                     ui.updateMode("cool")
                     feeds.publish(feeds.modeSettingFeed, "cool")
@@ -80,7 +80,7 @@ def checkTemperature():
     feeds.publish(feeds.temperatureSensorFeed, currTemp)
     feeds.publish(feeds.humidityFeed, currHumidity)
 
-    if ui.modeSetting == "warm":
+    if ui.modeSetting == "heat":
         if (currTemp <= ui.temperatureSetting):
             ui.fanToggle = 1
             feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
@@ -115,5 +115,5 @@ while True:
         print("Refreshing data")
         checkTemperature()
         prev_refresh_time = time.monotonic()
-    # feeds.loop()
-    time.sleep(.01)
+    feeds.loop()
+    # time.sleep(.01)
