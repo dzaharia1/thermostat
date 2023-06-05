@@ -15,15 +15,6 @@ temp_probe = adafruit_htu31d.HTU31D(i2c_bus)
 temp_probe.heater = False
 lightSensor = AnalogIn(board.LIGHT)
 
-def message(client, feed_id, payload):
-    print(feed_id, "is set to", payload)
-    if (feed_id == feeds.temperatureSettingFeed):
-        ui.updateTemperature(int(payload))
-    if (feed_id == feeds.fanSettingFeed):
-        ui.updateFanSpeed(payload)
-    if (feed_id == feeds.modeSettingFeed):
-        ui.updateMode(payload)
-
 lastButtonPush = 0.0
 def checkButtons():
     global lastButtonPush
@@ -42,9 +33,10 @@ def checkButtons():
                 lastButtonPush = time.monotonic()
                 if i == 0:
                     ui.updateMode("manual")
-                    ui.fanControl = 1
+                    ui.fanToggle = 1
                     feeds.publish(feeds.modeSettingFeed, "manual")
-                    feeds.publish(feeds.fanSettingFeed, ui.fanSetting)
+                    feeds.publish(feeds.fanSpeedFeed, ui.fanSpeed)
+                    feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
                 elif i == 1:
                     ui.updateMode("warm")
                     feeds.publish(feeds.modeSettingFeed, "warm")
@@ -68,13 +60,13 @@ def checkButtons():
             if button.contains(point):
                 lastButtonPush = time.monotonic()
                 if i == 0:
-                    if ui.fanControl == 1:
+                    if ui.fanToggle == 1:
                         feeds.publish(feeds.fanSpeedFeed, "0")
                     ui.updateFanSpeed("0")
                     ui.set_backlight(1)
                 else:
                     newFanSpeed = 4 - i
-                    if ui.fanControl == 1:
+                    if ui.fanToggle == 1:
                         feeds.publish(feeds.fanSpeedFeed, str(newFanSpeed))
                     ui.updateFanSpeed(str(newFanSpeed))
                     ui.set_backlight(1)
@@ -82,42 +74,38 @@ def checkButtons():
 
 
 def checkTemperature():
-    currTemp = temp_probe.temperature * (9 / 5) + 32 - 4
-    currHumidity = temp_probe.relative_humidity
+    currTemp = round(temp_probe.temperature * (9 / 5) + 32 - 4, 1)
+    currHumidity = round(temp_probe.relative_humidity, 1)
     ui.currTempLabel.text = str(floor(currTemp)) + "F\n" + str(floor(currHumidity)) + "%"
     feeds.publish(feeds.temperatureSensorFeed, currTemp)
     feeds.publish(feeds.humidityFeed, currHumidity)
-    
+
     if ui.modeSetting == "warm":
         if (currTemp <= ui.temperatureSetting):
-            if ui.fanControl != 1:
-                feeds.publish(feeds.fanSettingFeed, ui.fanSetting)
-                ui.fanControl = 1
-                ui.refresh_status_light()
+            ui.fanToggle = 1
+            feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
         else:
-            if ui.fanControl != 0:
-                feeds.publish(feeds.fanSettingFeed, "0")
-                ui.fanControl = 0
-                ui.refresh_status_light()
+            ui.fanToggle = 0
+            feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
     elif ui.modeSetting == "cool":
         if (currTemp >= ui.temperatureSetting):
-            if ui.fanControl != 1:
-                feeds.publish(feeds.fanSettingFeed, ui.fanSetting)
-                ui.fanControl = 1
-                ui.refresh_status_light()
+            ui.fanToggle = 1
+            feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
         else:
-            if ui.fanControl != 0:
-                feeds.publish(feeds.fanSettingFeed, "0")
-                ui.fanControl = 0
-                ui.refresh_status_light()
+            ui.fanToggle = 0
+            feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
+    ui.refresh_status_light()
 
-def mqtt_message(client):
-    1+1
+def mqtt_message(client, feed_id, payload):
+    print('Got {0} from {1}'.format(payload, feed_id))
+    if feed_id == feeds.temperatureSettingFeed:
+        ui.updateTemperature(int(payload))
 
 mqtt_client.on_message = mqtt_message
 
 checkTemperature()
 ui.updateMode("manual")
+feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
 prev_refresh_time = 0.0
 while True:
     checkButtons()
@@ -127,4 +115,5 @@ while True:
         print("Refreshing data")
         checkTemperature()
         prev_refresh_time = time.monotonic()
+    # feeds.loop()
     time.sleep(.01)
