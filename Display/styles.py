@@ -23,7 +23,7 @@ iconPaths = {
 icons = {
     "power": createIcon(iconPaths["power"]),
     "cool": createIcon(iconPaths["cool"]),
-    "heat": createIcon(iconPaths["warm"]),
+    "heat": createIcon(iconPaths["heat"]),
     "manual": createIcon(iconPaths["manual"]),
     "chevron_up": createIcon(iconPaths["chevron_up"]),
     "chevron_down": createIcon(iconPaths["chevron_down"]),
