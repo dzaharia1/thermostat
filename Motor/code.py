@@ -47,15 +47,14 @@ def message(client, feed_id, payload):
         fanSpeed = int(payload)
     elif feed_id == fanToggleFeed:
         fanOn = int(payload)
-    fanSpeed = fanSpeed * fanOn
-    setFanSpeed()
+    setFanSpeed(fanSpeed * fanOn)
 
-def setFanSpeed():
-    print("setting fan speed to", fanSpeed)
-    if fanSpeed == 0:
+def setFanSpeed(speed):
+    print("setting fan speed to", speed)
+    if speed == 0:
         servo.angle = zeroAngle
     else:
-        servo.angle = zeroAngle + (rotationRange - (fanSpeed - 1) * (rotationRange / 3))
+        servo.angle = zeroAngle + (rotationRange - (speed - 1) * (rotationRange / 3))
 
 pool = socketpool.SocketPool(wifi.radio)
 
@@ -82,9 +81,10 @@ mqttClient.loop(timeout=40)
 prev_refresh_time = 0.0
 while True:
     try:
-        if prev_refresh_time > 30:
-            mqttClient.get(fanSpeedFeed)
-            mqttClient.get(fanToggleFeed)
+        # if prev_refresh_time > 30:
+        #     mqttClient.get(fanSpeedFeed)
+        #     mqttClient.get(fanToggleFeed)
+        mqttClient.ping()
         mqttClient.loop(timeout=40)
     except:
         wifi.radio.connect(secrets["ssid"], secrets["password"])
