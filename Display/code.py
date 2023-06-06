@@ -34,15 +34,15 @@ def checkButtons():
                 if i == 0:
                     ui.updateMode("manual")
                     ui.fanToggle = 1
-                    feeds.publish(feeds.modeSettingFeed, "manual")
+                    feeds.publish(feeds.modeSettingFeedCommand, "manual")
                     feeds.publish(feeds.fanSpeedFeed, ui.fanSpeed)
                     feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
                 elif i == 1:
                     ui.updateMode("heat")
-                    feeds.publish(feeds.modeSettingFeed, "heat")
+                    feeds.publish(feeds.modeSettingFeedCommand, "heat")
                 elif i == 2:
                     ui.updateMode("cool")
-                    feeds.publish(feeds.modeSettingFeed, "cool")
+                    feeds.publish(feeds.modeSettingFeedCommand, "cool")
 
         # check temperature buttons
         for i, button in enumerate(ui.temperatureButtons):
@@ -50,24 +50,22 @@ def checkButtons():
                 lastButtonPush = time.monotonic()
                 if i == 0:
                     ui.updateTemperature(ui.temperatureSetting + 1)
-                    feeds.publish(feeds.temperatureSettingFeed, ui.temperatureSetting)
+                    feeds.publish(feeds.temperatureSettingFeedCommand, ui.temperatureSetting)
                 elif i == 1:
                     ui.updateTemperature(ui.temperatureSetting - 1)
-                    feeds.publish(feeds.temperatureSettingFeed, ui.temperatureSetting)
+                    feeds.publish(feeds.temperatureSettingFeedCommand, ui.temperatureSetting)
         
         # check fan buttons
         for i, button in enumerate(ui.fanButtons):
             if button.contains(point):
                 lastButtonPush = time.monotonic()
                 if i == 0:
-                    if ui.fanToggle == 1:
-                        feeds.publish(feeds.fanSpeedFeed, "0")
+                    feeds.publish(feeds.fanSpeedFeed, "0")
                     ui.updateFanSpeed("0")
                     ui.set_backlight(1)
                 else:
                     newFanSpeed = 4 - i
-                    if ui.fanToggle == 1:
-                        feeds.publish(feeds.fanSpeedFeed, str(newFanSpeed))
+                    feeds.publish(feeds.fanSpeedFeed, str(newFanSpeed))
                     ui.updateFanSpeed(str(newFanSpeed))
                     ui.set_backlight(1)
         time.sleep(.075)
@@ -81,14 +79,14 @@ def checkTemperature():
     feeds.publish(feeds.humidityFeed, currHumidity)
 
     if ui.modeSetting == "heat":
-        if (currTemp <= ui.temperatureSetting):
+        if (currTemp < ui.temperatureSetting):
             ui.fanToggle = 1
             feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
         else:
             ui.fanToggle = 0
             feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
     elif ui.modeSetting == "cool":
-        if (currTemp >= ui.temperatureSetting):
+        if (currTemp > ui.temperatureSetting):
             ui.fanToggle = 1
             feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
         else:
@@ -99,7 +97,21 @@ def checkTemperature():
 def mqtt_message(client, feed_id, payload):
     print('Got {0} from {1}'.format(payload, feed_id))
     if feed_id == feeds.temperatureSettingFeed:
-        ui.updateTemperature(int(payload))
+        ui.updateTemperature(floor(float(payload)))
+    if feed_id == feeds.fanSpeedFeed:
+        ui.updateFanSpeed(payload)
+    if feed_id == feeds.modeSettingFeed:
+        if payload == "heat" or payload == "cool":
+            ui.updateMode(payload)
+            if (ui.screenEnabled == False):
+                ui.disableScreen(force=True)
+        if payload == "manual" or payload == "off":
+            ui.updateMode("manual")
+            if (ui.screenEnabled == False):
+                ui.disableScreen(force=True)
+            ui.fanToggle = 1
+            feeds.publish(feeds.fanSpeedFeed, ui.fanSpeed)
+            feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
 
 mqtt_client.on_message = mqtt_message
 
@@ -108,11 +120,12 @@ ui.updateMode("manual")
 feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
 prev_refresh_time = 0.0
 while True:
+    # print("Main loop")
     checkButtons()
     if (time.monotonic() - lastButtonPush) > 15 :
         ui.disableScreen()
     if (time.monotonic() - prev_refresh_time) > 40:
-        print("Refreshing data")
+        print("Check readings")
         checkTemperature()
         prev_refresh_time = time.monotonic()
     feeds.loop()

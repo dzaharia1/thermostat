@@ -45,7 +45,7 @@ ui.append(topBarDiv)
 # build out top bar
 currTempLabel = Label(font=smallText, color=styles.colors["white"], x=5, y=20, line_spacing=.75)
 warmIcon = Group(x=84, y=0)
-warmIcon.append(styles.icons['warm'])
+warmIcon.append(styles.icons['heat'])
 coolIcon = Group(x=84, y=0)
 coolIcon.append(styles.icons["cool"])
 manualIcon = Group(x=84, y=0)
@@ -263,9 +263,9 @@ def set_backlight(val):
     display.brightness = val
     refresh_status_light()
 
-def disableScreen():
+def disableScreen(force=False):
     global screenEnabled
-    if screenEnabled:
+    if screenEnabled or force:
         screenEnabled = False
         set_backlight(.05)
         temperatureDiv.hidden = True

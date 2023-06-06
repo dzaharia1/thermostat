@@ -15,19 +15,18 @@ spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
 esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
 wifi = adafruit_esp32spi_wifimanager.ESPSPI_WiFiManager(esp, secrets)
 
-temperatureSettingFeed = "state/temp-setting"
+temperatureSettingFeedCommand = "state/temp-setting"
+# fanToggleFeedCommand = "state/fan-on"
+modeSettingFeedCommand = "state/thermostat-mode"
+temperatureSettingFeed = "state/temp-setting-command"
 fanToggleFeed = "state/fan-on"
+modeSettingFeed = "state/thermostat-mode-command"
 fanSpeedFeed = "state/fan-speed"
-modeSettingFeed = "state/thermostat-mode"
 temperatureSensorFeed = "state/temp-sensor"
 humidityFeed = "state/humidity-sensor"
 
 def connected(client, userdata, flags, rc):
     print("Connected to HA!")
-    mqtt_client.subscribe(temperatureSettingFeed)
-    # mqtt_client.subscribe(fanSpeedFeed)
-    # mqtt_client.subscribe(fanToggleFeed)
-    # mqtt_client.subscribe(modeSettingFeed)
 
 def disconnected(client):
     print("Disconnected from HA")
@@ -53,13 +52,8 @@ def publish(feed, data):
         mqtt_client.reconnect()
 
 def loop():
-    print("Fetching data")
-    try:
-        mqtt_client.loop(timeout=40)
-    except:
-        wifi.reset()
-        wifi.connect()
-        mqtt_client.reconnect()
+    # print("mqtt fetch")
+    mqtt_client.loop(timeout=.05)
 
 mqtt_client.on_connect = connected
 mqtt_client.on_disconnect = disconnected
@@ -67,8 +61,8 @@ mqtt_client.on_disconnect = disconnected
 print("Connecting to Home Assistant")
 mqtt_client.connect()
 
-# mqtt_client.subscribe(temperatureSettingFeed)
-# mqtt_client.subscribe(fanToggleFeed)
-# mqtt_client.subscribe(modeSettingFeed)
-# mqtt_client.subscribe(temperatureSensorFeed)
-# mqtt_client.subscribe(humidityFeed)
+mqtt_client.subscribe([
+    (temperatureSettingFeed, 1),
+    (modeSettingFeed, 1),
+    (fanSpeedFeed, 1),
+    (fanToggleFeed, 1)])
