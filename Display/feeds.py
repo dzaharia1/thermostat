@@ -1,14 +1,12 @@
+from adafruit_esp32spi.adafruit_esp32spi_socket import socket
 import board
 import busio
-import neopixel
 from digitalio import DigitalInOut
 from adafruit_esp32spi import adafruit_esp32spi
 from adafruit_esp32spi import adafruit_esp32spi_wifimanager
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
-from adafruit_minimqtt.adafruit_minimqtt import MQTT
-from adafruit_io.adafruit_io import IO_MQTT
+import adafruit_minimqtt.adafruit_minimqtt as MQTT
 from secrets import secrets
-
 
 esp32_cs = DigitalInOut(board.ESP_CS)
 esp32_ready = DigitalInOut(board.ESP_BUSY)
@@ -17,37 +15,59 @@ spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
 esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
 wifi = adafruit_esp32spi_wifimanager.ESPSPI_WiFiManager(esp, secrets)
 
-temperatureSettingFeed = "thermostat.temperature-setting"
-fanSettingFeed = "thermostat.fan-setting"
-modeSettingFeed = "thermostat.mode"
-temperatureReadingFeed = "thermostat.temperature-reading"
-humidityFeed = "thermostat.humidity-reading"
+temperatureSettingFeedCommand = "state/temp-setting"
+# fanToggleFeedCommand = "state/fan-on"
+modeSettingFeedCommand = "state/thermostat-mode"
+temperatureSettingFeed = "state/temp-setting-command"
+fanToggleFeed = "state/fan-on"
+modeSettingFeed = "state/thermostat-mode-command"
+fanSpeedFeed = "state/fan-speed"
+temperatureSensorFeed = "state/temp-sensor"
+humidityFeed = "state/humidity-sensor"
 
-def connected(client):
-    print("Connected to AdafruitIO!")
+def connected(client, userdata, flags, rc):
+    print("Connected to HA!")
 
 def disconnected(client):
-    print("Disconnected from IO")
+    print("Disconnected from HA")
+
+print("Connecting to wifi")
+wifi.connect()
+print("Connected to wifi as ", wifi.ip_address())
+
+MQTT.set_socket(socket, esp)
+mqtt_client = MQTT.MQTT(
+    broker=secrets["mqtt_broker"],
+    port=secrets["mqtt_port"],
+    username=secrets["mqtt_username"],
+    password=secrets["mqtt_password"]
+)
 
 def publish(feed, data):
     try:
-        io.publish(feed, data)
+        mqtt_client.publish(feed, data, retain=True)
     except:
         wifi.reset()
         wifi.connect()
-        io.reconnect()
+        mqtt_client.reconnect()
 
-wifi.connect()
+def loop():
+    # print("mqtt fetch")
+    try:
+        mqtt_client.loop(timeout=.05)
+    except:
+        wifi.reset()
+        wifi.connect()
+        mqtt_client.reconnect()
 
-mqtt_client = MQTT(
-    broker="io.adafruit.com",
-    port=1883,
-    username=secrets["aio_username"],
-    password=secrets["aio_key"],
-    socket_pool=socket,
-)
+mqtt_client.on_connect = connected
+mqtt_client.on_disconnect = disconnected
 
-io = IO_MQTT(mqtt_client)
+print("Connecting to Home Assistant")
+mqtt_client.connect()
 
-io.on_connect = connected
-io.on_disconnect = disconnected
+mqtt_client.subscribe([
+    (temperatureSettingFeed, 1),
+    (modeSettingFeed, 1),
+    (fanSpeedFeed, 1),
+    (fanToggleFeed, 1)])

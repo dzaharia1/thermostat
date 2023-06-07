@@ -8,25 +8,12 @@ font = terminalio.FONT
 from math import floor
 import ui
 import feeds
-from feeds import io
+from feeds import mqtt_client
 
 i2c_bus = busio.I2C(board.SCL, board.SDA)
 temp_probe = adafruit_htu31d.HTU31D(i2c_bus)
 temp_probe.heater = False
 lightSensor = AnalogIn(board.LIGHT)
-
-def message(client, feed_id, payload):
-    print(feed_id, "is set to", payload)
-    if (feed_id == feeds.temperatureSettingFeed):
-        ui.updateTemperature(int(payload))
-    if (feed_id == feeds.fanSettingFeed):
-        ui.updateFanSpeed(payload)
-    if (feed_id == feeds.modeSettingFeed):
-        ui.updateMode(payload)
-
-io.on_message = message
-print("Connecting to IO...")
-io.connect()
 
 lastButtonPush = 0.0
 def checkButtons():
@@ -40,20 +27,22 @@ def checkButtons():
             lastButtonPush = time.monotonic()
 
     if point and ui.screenEnabled:
+        # check mode buttons
         for i, button in enumerate(ui.modeButtons):
             if button.contains(point):
                 lastButtonPush = time.monotonic()
                 if i == 0:
                     ui.updateMode("manual")
-                    ui.fanControl = 1
-                    feeds.publish(feeds.modeSettingFeed, "manual")
-                    feeds.publish(feeds.fanSettingFeed, ui.fanSetting)
+                    ui.fanToggle = 1
+                    feeds.publish(feeds.modeSettingFeedCommand, "manual")
+                    feeds.publish(feeds.fanSpeedFeed, ui.fanSpeed)
+                    feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
                 elif i == 1:
-                    ui.updateMode("warm")
-                    feeds.publish(feeds.modeSettingFeed, "warm")
+                    ui.updateMode("heat")
+                    feeds.publish(feeds.modeSettingFeedCommand, "heat")
                 elif i == 2:
                     ui.updateMode("cool")
-                    feeds.publish(feeds.modeSettingFeed, "cool")
+                    feeds.publish(feeds.modeSettingFeedCommand, "cool")
 
         # check temperature buttons
         for i, button in enumerate(ui.temperatureButtons):
@@ -61,68 +50,89 @@ def checkButtons():
                 lastButtonPush = time.monotonic()
                 if i == 0:
                     ui.updateTemperature(ui.temperatureSetting + 1)
-                    feeds.publish(feeds.temperatureSettingFeed, ui.temperatureSetting)
+                    feeds.publish(feeds.temperatureSettingFeedCommand, ui.temperatureSetting)
                 elif i == 1:
                     ui.updateTemperature(ui.temperatureSetting - 1)
-                    feeds.publish(feeds.temperatureSettingFeed, ui.temperatureSetting)
+                    feeds.publish(feeds.temperatureSettingFeedCommand, ui.temperatureSetting)
         
         # check fan buttons
         for i, button in enumerate(ui.fanButtons):
             if button.contains(point):
                 lastButtonPush = time.monotonic()
                 if i == 0:
-                    if ui.fanControl == 1:
-                        feeds.publish(feeds.fanSettingFeed, "0")
+                    feeds.publish(feeds.fanSpeedFeed, "0")
                     ui.updateFanSpeed("0")
                     ui.set_backlight(1)
                 else:
                     newFanSpeed = 4 - i
-                    if ui.fanControl == 1:
-                        feeds.publish(feeds.fanSettingFeed, str(newFanSpeed))
+                    feeds.publish(feeds.fanSpeedFeed, str(newFanSpeed))
                     ui.updateFanSpeed(str(newFanSpeed))
                     ui.set_backlight(1)
         time.sleep(.075)
 
 
 def checkTemperature():
-    currTemp = temp_probe.temperature * (9 / 5) + 32 - 4
-    currHumidity = temp_probe.relative_humidity
+    currTemp = round(temp_probe.temperature * (9 / 5) + 32 - 4, 1)
+    currHumidity = round(temp_probe.relative_humidity, 1)
     ui.currTempLabel.text = str(floor(currTemp)) + "F\n" + str(floor(currHumidity)) + "%"
-    feeds.publish(feeds.temperatureReadingFeed, currTemp)
+    feeds.publish(feeds.temperatureSensorFeed, currTemp)
     feeds.publish(feeds.humidityFeed, currHumidity)
-    
-    if ui.modeSetting == "warm":
-        if (currTemp <= ui.temperatureSetting):
-            if ui.fanControl != 1:
-                feeds.publish(feeds.fanSettingFeed, ui.fanSetting)
-                ui.fanControl = 1
-                ui.refresh_status_light()
+
+    if ui.modeSetting == "heat":
+        if (currTemp < ui.temperatureSetting):
+            ui.fanToggle = 1
+            feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
         else:
-            if ui.fanControl != 0:
-                feeds.publish(feeds.fanSettingFeed, "0")
-                ui.fanControl = 0
-                ui.refresh_status_light()
+            ui.fanToggle = 0
+            feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
     elif ui.modeSetting == "cool":
-        if (currTemp >= ui.temperatureSetting):
-            if ui.fanControl != 1:
-                feeds.publish(feeds.fanSettingFeed, ui.fanSetting)
-                ui.fanControl = 1
-                ui.refresh_status_light()
+        if (currTemp > ui.temperatureSetting):
+            ui.fanToggle = 1
+            feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
         else:
-            if ui.fanControl != 0:
-                feeds.publish(feeds.fanSettingFeed, "0")
-                ui.fanControl = 0
-                ui.refresh_status_light()
+            ui.fanToggle = 0
+            feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
+    ui.refresh_status_light()
+
+def mqtt_message(client, feed_id, payload):
+    print('Got {0} from {1}'.format(payload, feed_id))
+    if feed_id == feeds.temperatureSettingFeed:
+        ui.updateTemperature(floor(float(payload)))
+    if feed_id == feeds.fanSpeedFeed:
+        ui.updateFanSpeed(payload)
+    if feed_id == feeds.modeSettingFeed:
+        if payload == "heat" or payload == "cool":
+            ui.updateMode(payload)
+            if (ui.screenEnabled == False):
+                ui.disableScreen(force=True)
+        elif payload == "manual":
+            ui.updateMode("manual")
+            if (ui.screenEnabled == False):
+                ui.disableScreen(force=True)
+            ui.fanToggle = 1
+            feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
+        elif payload == "off":
+            ui.updateMode("manual")
+            if (ui.screenEnabled == False):
+                ui.disableScreen(force=True)
+            ui.fanToggle = 0
+            feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
+            
+
+mqtt_client.on_message = mqtt_message
 
 checkTemperature()
 ui.updateMode("manual")
+feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
 prev_refresh_time = 0.0
 while True:
+    # print("Main loop")
     checkButtons()
     if (time.monotonic() - lastButtonPush) > 15 :
         ui.disableScreen()
     if (time.monotonic() - prev_refresh_time) > 40:
-        print("Refreshing data")
+        print("Check readings")
         checkTemperature()
         prev_refresh_time = time.monotonic()
-    time.sleep(.01)
+    feeds.loop()
+    # time.sleep(.01)

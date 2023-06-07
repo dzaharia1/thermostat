@@ -28,10 +28,9 @@ ts = adafruit_touchscreen.Touchscreen(
         z_threshold=100,
         size=(screen_width, screen_height))
 
-fanSetting = 1
+fanSpeed = 1
 temperatureSetting = 70
-fanControl = 1
-fanRun = 0
+fanToggle = 1
 modeSetting = "manual"
 screenEnabled = True
 
@@ -46,7 +45,7 @@ ui.append(topBarDiv)
 # build out top bar
 currTempLabel = Label(font=smallText, color=styles.colors["white"], x=5, y=20, line_spacing=.75)
 warmIcon = Group(x=84, y=0)
-warmIcon.append(styles.icons['warm'])
+warmIcon.append(styles.icons['heat'])
 coolIcon = Group(x=84, y=0)
 coolIcon.append(styles.icons["cool"])
 manualIcon = Group(x=84, y=0)
@@ -76,7 +75,7 @@ def updateMode(newMode):
     modeSetting = newMode
     temperatureSettingLabel.color = styles.colors[newMode]
 
-    if modeSetting == "warm":
+    if modeSetting == "heat":
         status_light.fill((245, 83, 2))
         warmIcon.hidden = False
         coolIcon.hidden = True
@@ -103,15 +102,15 @@ def updateTemperature(newTemperature):
     temperatureSettingLabel.text = str(temperatureSetting)
 
 def updateFanSpeed(newSpeed):
-    global fanSetting
+    global fanSpeed
     global fanSelectorDiv
-    fanSetting = newSpeed
+    fanSpeed = newSpeed
     while True:
         try:
             fanSelectorDiv.pop()
         except:
             break
-    fanSelectorDiv.append(styles.icons["fan_" + fanSetting])
+    fanSelectorDiv.append(styles.icons["fan_" + fanSpeed])
 
 modeButtons = []
 temperatureButtons = []
@@ -250,11 +249,11 @@ def checkTarget(button, touch):
         return False
 
 def refresh_status_light():
-    if fanControl and screenEnabled and fanSetting != "0":
+    if fanToggle and screenEnabled and fanSpeed != "0":
         status_light.brightness = 1
-    elif fanControl and not screenEnabled and fanSetting != "0":
+    elif fanToggle and not screenEnabled and fanSpeed != "0":
         status_light.brightness = .15
-    elif not fanControl or fanSetting == "0":
+    elif not fanToggle or fanSpeed == "0":
         status_light.brightness = 0
 
     status_light.show()
@@ -264,9 +263,9 @@ def set_backlight(val):
     display.brightness = val
     refresh_status_light()
 
-def disableScreen():
+def disableScreen(force=False):
     global screenEnabled
-    if screenEnabled:
+    if screenEnabled or force:
         screenEnabled = False
         set_backlight(.05)
         temperatureDiv.hidden = True
@@ -285,7 +284,7 @@ def enableScreen():
         currTempLabel.font = smallText
         currTempLabel.y = 20
         fanSelectorDiv.hidden = False
-        if modeSetting == "warm":
+        if modeSetting == "heat":
             warmIcon.hidden = False
             temperatureDiv.hidden = False
         elif modeSetting == "cool":

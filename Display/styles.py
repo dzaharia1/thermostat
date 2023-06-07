@@ -10,7 +10,7 @@ def createIcon(iconPath):
 iconPaths = {
     "power": cwd + "icons/power.bmp",
     "cool": cwd + "icons/cool.bmp",
-    "warm": cwd + "icons/warm.bmp",
+    "heat": cwd + "icons/warm.bmp",
     "manual": cwd + "icons/manual.bmp",
     "chevron_up": cwd + "icons/chevron_up.bmp",
     "chevron_down": cwd + "icons/chevron_down.bmp",
@@ -23,7 +23,7 @@ iconPaths = {
 icons = {
     "power": createIcon(iconPaths["power"]),
     "cool": createIcon(iconPaths["cool"]),
-    "warm": createIcon(iconPaths["warm"]),
+    "heat": createIcon(iconPaths["heat"]),
     "manual": createIcon(iconPaths["manual"]),
     "chevron_up": createIcon(iconPaths["chevron_up"]),
     "chevron_down": createIcon(iconPaths["chevron_down"]),
@@ -34,7 +34,7 @@ icons = {
 }
 
 colors = {
-    "warm": 0xFF6928,
+    "heat": 0xFF6928,
     "cool": 0x2898FF,
     "manual": 0xFFFFFF,
     "white": 0xFFFFFF,
