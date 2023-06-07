@@ -53,7 +53,12 @@ def publish(feed, data):
 
 def loop():
     # print("mqtt fetch")
-    mqtt_client.loop(timeout=.05)
+    try:
+        mqtt_client.loop(timeout=.05)
+    except:
+        wifi.reset()
+        wifi.connect()
+        mqtt_client.reconnect()
 
 mqtt_client.on_connect = connected
 mqtt_client.on_disconnect = disconnected
