@@ -105,13 +105,19 @@ def mqtt_message(client, feed_id, payload):
             ui.updateMode(payload)
             if (ui.screenEnabled == False):
                 ui.disableScreen(force=True)
-        if payload == "manual" or payload == "off":
+        elif payload == "manual":
             ui.updateMode("manual")
             if (ui.screenEnabled == False):
                 ui.disableScreen(force=True)
             ui.fanToggle = 1
-            feeds.publish(feeds.fanSpeedFeed, ui.fanSpeed)
             feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
+        elif payload == "off":
+            ui.updateMode("manual")
+            if (ui.screenEnabled == False):
+                ui.disableScreen(force=True)
+            ui.fanToggle = 0
+            feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
+            
 
 mqtt_client.on_message = mqtt_message
 
