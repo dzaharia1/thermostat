@@ -53,6 +53,7 @@ def publish(feed, data):
 
 def loop():
     # print("mqtt fetch")
+    mqtt_client.ping()
     try:
         mqtt_client.loop(timeout=.05)
     except:
