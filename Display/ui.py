@@ -278,17 +278,17 @@ def disableScreen(force=False):
 
 def enableScreen():
     global screenEnabled
-    if not screenEnabled:
-        screenEnabled = True
-        set_backlight(1)
-        currTempLabel.font = smallText
-        currTempLabel.y = 20
-        fanSelectorDiv.hidden = False
-        if modeSetting == "heat":
-            warmIcon.hidden = False
-            temperatureDiv.hidden = False
-        elif modeSetting == "cool":
-            coolIcon.hidden = False
-            temperatureDiv.hidden = False
-        if modeSetting == "manual":
-            manualIcon.hidden = False
+    # if not screenEnabled:
+    screenEnabled = True
+    set_backlight(1)
+    currTempLabel.font = smallText
+    currTempLabel.y = 20
+    fanSelectorDiv.hidden = False
+    if modeSetting == "heat":
+        warmIcon.hidden = False
+        temperatureDiv.hidden = False
+    elif modeSetting == "cool":
+        coolIcon.hidden = False
+        temperatureDiv.hidden = False
+    if modeSetting == "manual":
+        manualIcon.hidden = False

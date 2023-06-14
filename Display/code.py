@@ -79,14 +79,14 @@ def checkTemperature():
     feeds.publish(feeds.humidityFeed, currHumidity)
 
     if ui.modeSetting == "heat":
-        if (currTemp < ui.temperatureSetting):
+        if (currTemp <= ui.temperatureSetting):
             ui.fanToggle = 1
             feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
         else:
             ui.fanToggle = 0
             feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
     elif ui.modeSetting == "cool":
-        if (currTemp > ui.temperatureSetting):
+        if (currTemp >= ui.temperatureSetting):
             ui.fanToggle = 1
             feeds.publish(feeds.fanToggleFeed, ui.fanToggle)
         else:
@@ -98,7 +98,7 @@ def mqtt_message(client, feed_id, payload):
     print('Got {0} from {1}'.format(payload, feed_id))
     if feed_id == feeds.temperatureSettingFeed:
         ui.updateTemperature(floor(float(payload)))
-    if feed_id == feeds.fanSpeedFeed:
+    if feed_id == feeds.fanSpeedCommand:
         ui.updateFanSpeed(payload)
     if feed_id == feeds.modeSettingFeed:
         if payload == "heat" or payload == "cool":
@@ -135,4 +135,3 @@ while True:
         checkTemperature()
         prev_refresh_time = time.monotonic()
     feeds.loop()
-    # time.sleep(.01)

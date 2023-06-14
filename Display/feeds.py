@@ -22,6 +22,7 @@ temperatureSettingFeed = "state/temp-setting-command"
 fanToggleFeed = "state/fan-on"
 modeSettingFeed = "state/thermostat-mode-command"
 fanSpeedFeed = "state/fan-speed"
+fanSpeedCommand = "state/fan-speed-command"
 temperatureSensorFeed = "state/temp-sensor"
 humidityFeed = "state/humidity-sensor"
 
@@ -30,6 +31,10 @@ def connected(client, userdata, flags, rc):
 
 def disconnected(client):
     print("Disconnected from HA")
+
+def subscribed(a, b, c, d):
+    print("Connected to:")
+    print(mqtt_client._subscribed_topics)
 
 print("Connecting to wifi")
 wifi.connect()
@@ -44,28 +49,43 @@ mqtt_client = MQTT.MQTT(
 )
 
 def publish(feed, data):
+    print("Publishing {} to {}".format(feed, data))
     try:
         mqtt_client.publish(feed, data, retain=True)
     except:
-        wifi.reset()
-        wifi.connect()
-        mqtt_client.reconnect()
+        print("Publish failed")
+        try:
+            mqtt_client.reconnect(resub_topics=False)
+            mqtt_client.subscribe([
+                (temperatureSettingFeed, 1),
+                (modeSettingFeed, 1),
+                (fanSpeedCommand, 1),
+                (fanToggleFeed, 1)])
+        except:
+            wifi.reset()
+            wifi.connect()
+
+        publish(feed, data)
 
 def loop():
-    # print("mqtt fetch")
-    mqtt_client.ping()
     try:
         mqtt_client.loop(timeout=.05)
     except:
+        print("Fetch failed")
         try:
+            mqtt_client.reconnect(resub_topics=False)
+            mqtt_client.subscribe([
+                (temperatureSettingFeed, 1),
+                (modeSettingFeed, 1),
+                (fanSpeedCommand, 1),
+                (fanToggleFeed, 1)])
+        except:
             wifi.reset()
             wifi.connect()
-            mqtt_client.reconnect()
-        except:
-            loop()
 
 mqtt_client.on_connect = connected
 mqtt_client.on_disconnect = disconnected
+mqtt_client.on_subscribe = subscribed
 
 print("Connecting to Home Assistant")
 mqtt_client.connect()
@@ -73,5 +93,5 @@ mqtt_client.connect()
 mqtt_client.subscribe([
     (temperatureSettingFeed, 1),
     (modeSettingFeed, 1),
-    (fanSpeedFeed, 1),
+    (fanSpeedCommand, 1),
     (fanToggleFeed, 1)])
