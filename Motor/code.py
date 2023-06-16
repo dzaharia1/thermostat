@@ -16,7 +16,7 @@ rotationRange = 130
 zeroAngle = 0
 
 groupName = "thermostat"
-fanSpeedFeed = "state/fan-speed"
+fanSpeedFeed = "state/fan-speed-command"
 fanToggleFeed = "state/fan-on"
 fanSpeed = 2
 fanOn = 1
