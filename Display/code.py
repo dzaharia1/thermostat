@@ -100,6 +100,7 @@ def mqtt_message(client, feed_id, payload):
         ui.updateTemperature(floor(float(payload)))
     if feed_id == feeds.fanSpeedCommand:
         ui.updateFanSpeed(payload)
+        feeds.publish(feeds.fanSpeedFeed, ui.fanSpeed)
     if feed_id == feeds.modeSettingFeed:
         if payload == "heat" or payload == "cool":
             ui.updateMode(payload)
